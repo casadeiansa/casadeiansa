@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a2e">
+<title>Casa de Iansã</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--dk:#1a1a2e;--dk2:#16213e;--dk3:#0f3460;--gold:#f0c040;--gold2:#e6a817;--red:#e74c3c;--blue:#3498db;--green:#2ecc71;--orange:#f39c12;--purple:#9b59b6;--wpp:#25d366;--gray:#888;--lg:#f0f0f0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:'Segoe UI',-apple-system,sans-serif;background:var(--bg);min-height:100vh;max-width:500px;margin:0 auto;padding-bottom:80px;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none}input,textarea,select{font-family:inherit}
+.hdr{background:linear-gradient(135deg,var(--dk),var(--dk2),var(--dk3));color:#fff;padding:18px 16px 14px;border-radius:0 0 24px 24px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.hdr-row img{width:40px;height:40px;border-radius:50%;background:#fff;padding:2px;object-fit:contain}
+.hdr-nm{font-size:11px;letter-spacing:1px;opacity:.85;font-family:Georgia,serif;line-height:1.2}
+.hdr-t{font-size:22px;font-weight:800;font-family:Georgia,serif;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hdr-i{margin-top:3px;opacity:.7;font-size:12px}
+.tbar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,var(--dk),var(--dk2));display:flex;justify-content:space-around;padding:4px 0 max(6px,env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.1);z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
+.tb{background:none;color:rgba(255,255,255,.5);display:flex;flex-direction:column;align-items:center;gap:1px;font-size:9px;padding:3px 6px;transition:.2s}
+.tb.on{color:var(--gold);font-weight:700;transform:scale(1.05)}
+.tb .ic{font-size:18px}
+.cd{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:10px}
+.bt{width:100%;padding:12px 16px;border-radius:12px;color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;margin-bottom:8px}
+.bt:disabled{background:#ccc!important}
+.bt .bi{font-size:18px}
+.bt-sm{padding:8px 14px;font-size:13px;width:auto;display:inline-flex;margin:0}
+.gb{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;color:#fff;font-size:11px;font-weight:800;flex-shrink:0}
+.gA{background:var(--red)}.gB{background:var(--blue)}.gC{background:var(--green)}.gD{background:var(--orange)}
+.ig{margin-bottom:12px}
+.ig label{font-size:11px;font-weight:700;color:#666;display:block;margin-bottom:3px}
+.ig input,.ig textarea,.ig select{width:100%;padding:10px 12px;border:2px solid #e8e8e8;border-radius:10px;font-size:15px;outline:none;transition:.2s}
+.ig input:focus,.ig textarea:focus,.ig select:focus{border-color:var(--dk3)}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.mo.vis{display:flex}
+.mc{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85vh;overflow:auto;padding:16px 14px max(14px,env(safe-area-inset-bottom));animation:su .3s ease}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mh h2{font-size:18px;font-weight:800;color:var(--dk)}
+.mx{background:var(--lg);border-radius:50%;width:34px;height:34px;font-size:16px;display:flex;align-items:center;justify-content:center}
+.ch{padding:6px 14px;border-radius:18px;background:var(--lg);color:#666;font-weight:700;font-size:12px;white-space:nowrap}
+.ch.on{background:var(--dk);color:#fff}
+.fh{padding:8px 12px;border-radius:10px;color:#fff;font-weight:800;font-size:13px;margin-top:4px;margin-bottom:6px}
+.sb{width:34px;height:34px;border-radius:8px;font-size:15px;background:var(--lg);transition:.15s}
+.pg{height:4px;border-radius:2px;background:var(--lg);overflow:hidden;margin-top:4px}
+.pf{height:100%;border-radius:2px;transition:width .5s}
+.page{display:none}.page.on{display:block}
+.ct{padding:14px;display:flex;flex-direction:column;gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.fx{display:flex}.fc{flex-direction:column}.ac{align-items:center}.jb{justify-content:space-between}.fw{flex-wrap:wrap}
+.gp4{gap:4px}.gp6{gap:6px}.gp8{gap:8px}.gp10{gap:10px}
+.ng{background:linear-gradient(135deg,#fff9e6,#fff3cc);border:1px solid var(--gold);border-radius:14px;padding:14px}
+.ng .nt{font-size:13px;font-weight:700;color:#8a6d00}
+.ng .nd{font-size:12px;color:#8a6d00;margin-top:3px}
+.wp{background:var(--lg);padding:10px;border-radius:10px;font-size:11px;white-space:pre-wrap;word-break:break-word;max-height:250px;overflow:auto;line-height:1.4;font-family:monospace}
+.mc2{padding:5px 10px;border-radius:18px;border:1px solid #ddd;background:#f8f8f8;font-size:12px;display:inline-flex;align-items:center;gap:4px}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-red{background:#fce4ec;color:#c62828}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.aviso-card{background:linear-gradient(135deg,#fff9e6,#fffde8);border-left:4px solid var(--gold);border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:8px}
+.cal-item{padding:10px 12px;border-left:4px solid var(--blue);border-radius:0 10px 10px 0;background:#f8faff;margin-bottom:6px}
+.login-bg{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--dk),var(--dk2),var(--dk3));padding:20px}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-bg">
+  <img id="login-logo" style="width:80px;height:80px;border-radius:50%;background:#fff;padding:4px;object-fit:contain;margin-bottom:16px" alt="Logo">
+  <div style="color:#fff;font-family:Georgia,serif;font-size:20px;font-weight:800;text-align:center;margin-bottom:4px">Centro Afro-Religioso</div>
+  <div style="color:var(--gold);font-family:Georgia,serif;font-size:24px;font-weight:800;text-align:center;margin-bottom:24px">Casa de Iansã</div>
+  <button id="btn-entrar-filho" class="bt" style="background:var(--green);max-width:280px"><span class="bi">👤</span> Entrar como Filho</button>
+  <button id="btn-entrar-admin" class="bt" style="background:var(--dk3);max-width:280px"><span class="bi">🔐</span> Entrar como Admin</button>
+  <div id="login-senha" style="display:none;margin-top:12px;width:100%;max-width:280px">
+    <div class="ig"><input id="input-senha" type="password" placeholder="Digite a senha" style="text-align:center;background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3)"></div>
+    <button id="btn-login" class="bt" style="background:var(--gold);color:var(--dk)"><span class="bi">🔓</span> Entrar</button>
+    <div id="login-erro" style="color:var(--red);text-align:center;font-size:12px;margin-top:6px;display:none">Senha incorreta!</div>
+  </div>
+</div>
+
+<!-- APP CONTAINER -->
+<div id="app" style="display:none">
+
+<!-- PAGES -->
+<div id="p-home" class="page on"></div>
+<div id="p-membros" class="page"></div>
+<div id="p-escala" class="page"></div>
+<div id="p-presenca" class="page"></div>
+<div id="p-relatorio" class="page"></div>
+<div id="p-mensalidade" class="page"></div>
+<div id="p-doacoes" class="page"></div>
+<div id="p-calendario" class="page"></div>
+<div id="p-avisos" class="page"></div>
+
+<!-- TABBAR -->
+<div class="tbar" id="tbar"></div>
+
+<!-- MODAL -->
+<div id="modal" class="mo"><div class="mc"><div class="mh"><h2 id="m-title"></h2><button class="mx" id="m-close">✕</button></div><div id="m-body"></div></div></div>
+</div>
+
+<script>
+var LOGO="logo.png";
+var ADMIN_PASS="iansa2026";
+var GR=["A","B","C","D"],GC={A:"#e74c3c",B:"#3498db",C:"#2ecc71",D:"#f39c12"};
+var SM={presente:{i:"✅",l:"Presente",c:"#2ecc71"},faltou:{i:"❌",l:"Faltou",c:"#e74c3c"},avisou:{i:"🔔",l:"Avisou",c:"#f39c12"},trocou:{i:"🔄",l:"Trocou",c:"#3498db"}};
+var TF={"PRÉ-GIRA":[["Filho de Trabalho Responsável",1],["Varrer e passar pano no terreiro + cuspidores",4],["Varrer calçada e guardar vassouras/rodos/bacias",1],["Varrer, passar pano e organizar o 2º andar",3],["Limpar as cadeiras",2],["Organizar a cozinha",2],["Lavar os 3 banheiros e repor utensílios",3],["Lavar panos de chão e estender",1],["Estoque",1],["Cuidar da casinha de Exu",1]],"DURANTE A GIRA":[["Caixa",1],["Cantina",2],["Chamar a assistência",3]],"PÓS-GIRA":[["Responsável Pós-Gira",1],["Arrumar a cozinha",2],["Lavar os 2 banheiros",2],["Varrer e passar pano + guardar cuspidores/copos de vela",4],["Tirar lixo, guardar vassouras, lavar panos",1],["Organizar 2º andar (verificar pertences)",1]]};
+var FC={"PRÉ-GIRA":"var(--orange)","DURANTE A GIRA":"var(--blue)","PÓS-GIRA":"var(--green)"};
+var SK="terreiro_v3",D,mode="",cTab="home",fM="todos",eS={etapa:"inicio"},pGid=null;
+
+function dd(){return{membros:[],giras:[],rot:0,nMid:1,nGid:1,mensalidades:{},itensDoacao:[],sorteios:{},calendario:[],avisos:[],senhaAdmin:ADMIN_PASS}}
+function ld(){try{var r=localStorage.getItem(SK);if(r){var d=JSON.parse(r);if(!d.mensalidades)d.mensalidades={};if(!d.itensDoacao)d.itensDoacao=[];if(!d.sorteios)d.sorteios={};if(!d.calendario)d.calendario=[];if(!d.avisos)d.avisos=[];if(!d.senhaAdmin)d.senhaAdmin=ADMIN_PASS;return d}}catch(e){}return dd()}
+function sv(){try{localStorage.setItem(SK,JSON.stringify(D))}catch(e){}}
+D=ld();
+function atv(){return D.membros.filter(function(m){return m.ativo})}
+function gp(){return D.giras.filter(function(g){return g.status==="publicada"})}
+function shuf(a){a=[].concat(a);for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function e(s){return s?s.replace(/</g,"&lt;").replace(/>/g,"&gt;"):""}
+function gb(g){return'<span class="gb g'+g+'">'+g+"</span>"}
+function isAdmin(){return mode==="admin"}
+function mesAno(){var d=new Date();return(d.getMonth()+1)+"/"+d.getFullYear()}
+
+// === LOGIN ===
+document.getElementById("login-logo").src=LOGO;
+document.getElementById("btn-entrar-filho").addEventListener("click",function(){mode="filho";startApp()});
+document.getElementById("btn-entrar-admin").addEventListener("click",function(){document.getElementById("login-senha").style.display="block"});
+document.getElementById("btn-login").addEventListener("click",function(){
+  var s=document.getElementById("input-senha").value;
+  if(s===D.senhaAdmin){mode="admin";startApp()}
+  else{document.getElementById("login-erro").style.display="block";setTimeout(function(){document.getElementById("login-erro").style.display="none"},2000)}
+});
+document.getElementById("input-senha").addEventListener("keydown",function(ev){if(ev.key==="Enter")document.getElementById("btn-login").click()});
+
+function startApp(){
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="block";
+  buildTabbar();setLogos();go("home");
+}
+
+// === TABBAR ===
+function buildTabbar(){
+  var tabs=isAdmin()?[
+    {id:"home",ic:"🏠",l:"Início"},{id:"membros",ic:"👥",l:"Membros"},{id:"escala",ic:"📋",l:"Escala"},
+    {id:"mensalidade",ic:"💰",l:"Mensal."},{id:"doacoes",ic:"🎁",l:"Doações"}
+  ]:[
+    {id:"home",ic:"🏠",l:"Início"},{id:"escala",ic:"📋",l:"Escala"},{id:"calendario",ic:"📅",l:"Calendário"},
+    {id:"avisos",ic:"📢",l:"Avisos"},{id:"doacoes",ic:"🎁",l:"Doações"}
+  ];
+  var h="";tabs.forEach(function(t){h+='<button class="tb'+(t.id==="home"?" on":"")+'" data-tab="'+t.id+'"><span class="ic">'+t.ic+'</span><span>'+t.l+"</span></button>"});
+  document.getElementById("tbar").innerHTML=h;
+}
+
+// === NAV ===
+function go(tab){
+  cTab=tab;if(tab==="escala")eS={etapa:"inicio"};if(tab==="presenca")pGid=null;
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on")});
+  var el=document.getElementById("p-"+tab);if(el)el.classList.add("on");
+  document.querySelectorAll(".tb").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-tab")===tab)});
+  renderAll();
+}
+function hdr(t,sub){return'<div class="hdr"><div class="hdr-row"><img class="li" alt="Logo"><div class="hdr-nm">Centro Afro-Religioso<br>Casa de Iansã</div></div><div class="hdr-t">'+t+'</div>'+(sub?'<div class="hdr-i">'+sub+'</div>':'')+'</div>'}
+function setLogos(){document.querySelectorAll(".li").forEach(function(i){i.src=LOGO})}
+
+// === MODAL ===
+function openM(t,h){document.getElementById("m-title").textContent=t;document.getElementById("m-body").innerHTML=h;document.getElementById("modal").classList.add("vis")}
+function closeM(){document.getElementById("modal").classList.remove("vis")}
+
+// === EXPORT/IMPORT ===
+function exportD(){var b=new Blob([JSON.stringify(D,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="terreiro_backup_"+new Date().toISOString().slice(0,10)+".json";a.click()}
+function importD(f){if(!f)return;var r=new FileReader();r.onload=function(ev){try{var d=JSON.parse(ev.target.result);if(d.membros){D=d;sv();renderAll();alert("✅ Dados importados!")}}catch(e){alert("❌ Erro ao ler.")}};r.readAsText(f)}
+
+// === RENDER HOME ===
+function rHome(){
+  var a=atv(),p=gp(),el=document.getElementById("p-home");
+  var h=hdr("Gestão da Casa","Axé! "+( isAdmin()?"Modo Administrador":"Modo Filho"));
+  h+='<div class="ct">';
+  // Stats
+  h+='<div class="cd"><div class="fx jb ac"><div><div style="font-size:12px;color:var(--gray);font-weight:600">Membros ativos</div><div style="font-size:32px;font-weight:800;color:var(--dk)">'+a.length+'</div></div><div class="fx gp6">';
+  GR.forEach(function(g){var n=a.filter(function(m){return m.grupo===g}).length;h+='<div style="text-align:center">'+gb(g)+'<div style="font-size:10px;font-weight:700;margin-top:1px">'+n+"</div></div>"});
+  h+='</div></div></div>';
+  // Avisos recentes
+  if(D.avisos.length){var av=D.avisos[D.avisos.length-1];h+='<div class="aviso-card"><div style="font-size:11px;color:var(--gray)">📢 Último aviso</div><div style="font-size:13px;font-weight:700;margin-top:2px">'+e(av.titulo)+'</div><div style="font-size:12px;color:#555;margin-top:2px">'+e(av.texto).substring(0,80)+'...</div></div>'}
+  // Nav buttons
+  if(isAdmin()){
+    h+='<div class="g3">';
+    [["membros","👥","Membros","var(--blue)"],["escala","📋","Escala","var(--green)"],["presenca","✅","Presença","var(--orange)"],["relatorio","📊","Relatório","var(--purple)"],["mensalidade","💰","Mensal.","var(--dk3)"],["doacoes","🎁","Doações","var(--red)"],["calendario","📅","Calendário","var(--blue)"],["avisos","📢","Avisos","var(--orange)"]].forEach(function(b){
+      h+='<button class="bt" data-go="'+b[0]+'" style="background:'+b[3]+';font-size:12px;padding:10px 8px"><span class="bi" style="font-size:16px">'+b[1]+'</span>'+b[2]+'</button>'});
+    h+='</div>';
+    // Backup
+    h+='<div class="cd" style="border:1px dashed #ccc;text-align:center"><div style="font-size:12px;color:var(--gray);margin-bottom:6px">Backup</div><div class="fx gp8" style="justify-content:center"><button class="bt bt-sm" id="btn-export" style="background:var(--dk3)">📥 Exportar</button><label class="bt bt-sm" style="background:var(--orange);cursor:pointer">📤 Importar<input type="file" id="file-import" accept=".json" style="display:none"></label></div></div>';
+  } else {
+    h+='<div class="g2">';
+    [["escala","📋","Ver Escala","var(--green)"],["calendario","📅","Calendário","var(--blue)"],["avisos","📢","Avisos","var(--orange)"],["doacoes","🎁","Minhas Doações","var(--red)"]].forEach(function(b){
+      h+='<button class="bt" data-go="'+b[0]+'" style="background:'+b[3]+'"><span class="bi">'+b[1]+'</span>'+b[2]+'</button>'});
+    h+='</div>';
+  }
+  // Regra de ouro
+  h+='<div class="ng"><div class="nt">💡 Regra de Ouro</div><div class="nd">Quem <strong>não responde</strong> no WhatsApp está <strong>CONFIRMADO</strong> na escala!</div></div>';
+  // Logout
+  h+='<button class="bt" id="btn-logout" style="background:var(--gray);font-size:13px"><span class="bi">🚪</span> Sair</button>';
+  h+='</div>';
+  el.innerHTML=h;setLogos();
+}
+
+// === MEMBROS (admin only) ===
+function rMembros(){
+  if(!isAdmin())return;
+  var a=atv(),el=document.getElementById("p-membros");
+  var h=hdr("Membros",a.length+" membros ativos");
+  h+='<div class="ct">';
+  h+='<div class="fx gp8"><button class="bt" id="btn-add" style="background:var(--green);flex:1"><span class="bi">➕</span>Adicionar</button><button class="bt" id="btn-lote" style="background:var(--blue);flex:1"><span class="bi">📋</span>Importar</button></div>';
+  h+='<div class="fx gp6" id="m-filt" style="overflow-x:auto">';
+  h+='<button class="ch'+(fM==="todos"?" on":"")+'" data-filt="todos">Todos ('+a.length+')</button>';
+  GR.forEach(function(g){var n=a.filter(function(m){return m.grupo===g}).length;h+='<button class="ch'+(fM===g?" on":"")+'" data-filt="'+g+'">'+gb(g)+' '+n+'</button>'});
+  h+='</div>';
+  var fl=fM==="todos"?a:a.filter(function(m){return m.grupo===fM});
+  fl.forEach(function(m){h+='<div class="cd" style="padding:10px 12px"><div class="fx ac jb"><div class="fx ac gp8">'+gb(m.grupo)+'<div><div style="font-weight:700;font-size:14px;color:var(--dk)">'+e(m.nome)+'</div>'+(m.apelido?'<div style="font-size:11px;color:var(--gray)">@'+e(m.apelido)+'</div>':'')+'</div></div><div class="fx gp4"><button style="background:var(--lg);border-radius:6px;padding:5px 8px;font-size:13px" data-edit="'+m.id+'">✏️</button><button style="background:#fee;border-radius:6px;padding:5px 8px;font-size:13px" data-del="'+m.id+'">🗑️</button></div></div></div>'});
+  if(!fl.length)h+='<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:36px">👥</div><div style="margin-top:6px">Nenhum membro</div></div>';
+  h+='</div>';el.innerHTML=h;setLogos();
+}
+
+// === ESCALA ===
+function gerarEsc(dt){var a=atv(),rot=D.rot,mg={};GR.forEach(function(g){mg[g]=shuf(a.filter(function(m){return m.grupo===g}))});var ic={A:0,B:0,C:0,D:0},ti=0,esc=[];Object.keys(TF).forEach(function(fase){TF[fase].forEach(function(t){var gi=(ti+rot)%4,g=GR[gi],ms=mg[g],sel=[];for(var i=0;i<t[1];i++){if(ms.length){sel.push(JSON.parse(JSON.stringify(ms[ic[g]%ms.length])));ic[g]++}}esc.push({fase:fase,tarefa:t[0],qtd:t[1],membros:sel});ti++})});return esc}
+function rEscala(){
+  var el=document.getElementById("p-escala"),a=atv(),p=gp();
+  var h=hdr("Escala",isAdmin()?"Gere e gerencie as escalas":"Confira a escala da próxima gira");
+  h+='<div class="ct">';
+  if(isAdmin()&&eS.etapa==="inicio"){
+    h+='<div class="cd"><div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:6px">📋 Nova Escala</div><div class="ig"><label>Data da gira</label><input id="e-data" placeholder="Ex: 20/04/2026"></div><button class="bt" id="btn-gerar" style="background:var(--green)"'+(a.length<10?" disabled":"")+'><span class="bi">⚡</span> Gerar Escala</button>'+(a.length<10?'<p style="font-size:11px;color:var(--red);margin-top:4px">⚠️ Mínimo 10 membros ('+a.length+')</p>':'')+'</div>';
+  } else if(isAdmin()&&eS.etapa==="preview"){
+    var es=eS.esc,gi=eS.gira,fa="";
+    h+='<div class="cd" style="background:#f8f9fa;border:2px solid var(--dk3)"><div style="font-size:15px;font-weight:800;color:var(--dk3)">👀 Preview — '+e(gi.data)+'</div><div style="font-size:11px;color:var(--gray);margin-top:3px">Toque no nome para trocar</div></div>';
+    es.forEach(function(item,i){if(item.fase!==fa){fa=item.fase;h+='<div class="fh" style="background:'+(FC[fa]||"#888")+'">'+fa+'</div>'}h+='<div class="cd" style="padding:8px 12px"><div style="font-size:12px;font-weight:700;color:#444;margin-bottom:4px">'+e(item.tarefa)+'</div><div class="fx fw gp4">';item.membros.forEach(function(m,mi){h+='<button class="mc2" data-troca="'+i+"-"+mi+'">'+gb(m.grupo)+" "+(m.apelido?"@"+e(m.apelido):e(m.nome))+"</button>"});h+="</div></div>"});
+    h+='<div class="fx gp8"><button class="bt" id="btn-regen" style="background:var(--orange);flex:1"><span class="bi">🔄</span>Regerar</button><button class="bt" id="btn-canc" style="background:var(--red);flex:1"><span class="bi">❌</span>Cancelar</button></div>';
+    h+='<button class="bt" id="btn-pub" style="background:var(--green)"><span class="bi">✅</span> Publicar</button>';
+  }
+  // Giras publicadas
+  if(p.length){h+='<h3 style="font-size:14px;font-weight:700;color:var(--dk);margin:4px 0">📅 Giras publicadas</h3>';p.slice(-5).reverse().forEach(function(g){var tot=g.escala.reduce(function(s,x){return s+x.membros.length},0);h+='<div class="cd" style="padding:10px 12px"><div class="fx jb ac"><div><div style="font-weight:700;font-size:14px">Gira '+e(g.data)+'</div><div style="font-size:11px;color:var(--gray)">'+tot+' pessoas</div></div><div class="fx gp4">';if(isAdmin()){h+='<button class="bt bt-sm" style="background:var(--wpp)" data-wpp="'+g.id+'">📱</button><button class="bt bt-sm" style="background:var(--orange)" data-gopres="'+g.id+'">✅</button>'}h+='</div></div></div>'})}
+  h+='</div>';el.innerHTML=h;setLogos();
+}
+
+function wppMsg(gi){var em={"PRÉ-GIRA":"🔸","DURANTE A GIRA":"🔹","PÓS-GIRA":"🔸"},m="Boa tarde, filhos! Benção a todos! 🙏\n\nSegue a escala da gira de *"+gi.data+"*:\n\n📌 *IMPORTANTE: Quem NÃO puder comparecer, avise respondendo esta mensagem.*\n⚠️ *Quem não responder, está CONFIRMADO na escala.*\n",fa="";gi.escala.forEach(function(item){if(item.fase!==fa){fa=item.fase;m+="\n"+(em[fa]||"▪️")+" *"+fa+"*\n"}var ns=item.membros.map(function(x){return x.apelido?"@"+x.apelido:x.nome}).join(", ");m+="• "+item.tarefa+": "+ns+"\n"});m+="\n⚠️ *Caso não possa comparecer, avise ao filho de trabalho responsável.*\n💛 Se todos colaborarem, nossa casa fica linda!\n\nAxé! 🙏✨";return m}
+
+// === PRESENÇA ===
+function rPresenca(){
+  var el=document.getElementById("p-presenca"),p=gp();
+  var h=hdr("Presença","Registre quem compareceu");h+='<div class="ct">';
+  if(!pGid){p.slice(-5).reverse().forEach(function(g){var ids={};g.escala.forEach(function(x){x.membros.forEach(function(m){ids[m.id]=1})});var mc=Object.keys(g.presenca||{}).length;h+="<div class=\"cd\" style=\"cursor:pointer\" data-pgira=\""+g.id+"\"><div class=\"fx jb ac\"><div><div style=\"font-weight:700;font-size:15px\">📅 "+e(g.data)+"</div><div style=\"font-size:11px;color:var(--gray)\">"+mc+"/"+Object.keys(ids).length+" presenças</div></div><span style=\"font-size:20px\">→</span></div></div>"})}
+  else{var gi=D.giras.find(function(g){return g.id===pGid});if(!gi){pGid=null;rPresenca();return}var mm={};gi.escala.forEach(function(x){x.membros.forEach(function(m){mm[m.id]=m})});var ms=Object.keys(mm).map(function(k){return mm[k]});
+  h+='<div class="fx ac gp8"><button style="background:var(--lg);border-radius:8px;padding:6px 12px;font-weight:700" id="btn-pvolt">← Voltar</button><span style="font-weight:700;font-size:15px">Gira '+e(gi.data)+"</span></div>";
+  h+='<div class="fx gp4" style="padding:6px 0;font-size:10px;color:var(--gray);justify-content:center">';Object.keys(SM).forEach(function(k){h+="<span>"+SM[k].i+" "+SM[k].l+"</span> "});h+="</div>";
+  ms.forEach(function(m){var st=(gi.presenca||{})[m.id];h+='<div class="cd" style="padding:8px 10px"><div class="fx ac jb"><div class="fx ac gp6">'+gb(m.grupo)+'<span style="font-weight:600;font-size:13px">'+(m.apelido?"@"+e(m.apelido):e(m.nome))+'</span></div><div class="fx gp4">';Object.keys(SM).forEach(function(k){var v=SM[k];h+='<button class="sb" data-pmark="'+m.id+"-"+k+'" style="background:'+(st===k?v.c:"var(--lg)")+";opacity:"+(st&&st!==k?".4":"1")+'">'+v.i+"</button>"});h+="</div></div></div>"})}
+  h+="</div>";el.innerHTML=h;setLogos();
+}
+
+// === RELATÓRIO ===
+function rRelatorio(){
+  var el=document.getElementById("p-relatorio"),p=gp(),a=atv();
+  var h=hdr("Relatório",p.length+" giras registradas");h+='<div class="ct">';
+  var st=a.map(function(m){var pr=0,fa=0,av=0,tr=0,tot=0;p.forEach(function(g){if(g.escala.some(function(x){return x.membros.some(function(mm){return mm.id===m.id})})){tot++;var s=(g.presenca||{})[m.id];if(s==="presente")pr++;else if(s==="faltou")fa++;else if(s==="avisou")av++;else if(s==="trocou")tr++}});return{id:m.id,nome:m.nome,grupo:m.grupo,pr:pr,fa:fa,av:av,tr:tr,tot:tot,pct:tot>0?Math.round(pr/tot*100):null}}).sort(function(a,b){return(a.pct===null?-1:a.pct)-(b.pct===null?-1:b.pct)});
+  st.forEach(function(m){var c=m.pct>=70?"var(--green)":m.pct>=40?"var(--orange)":"var(--red)";h+='<div class="cd" style="padding:8px 12px"><div class="fx ac jb"><div class="fx ac gp6" style="flex:1;min-width:0">'+gb(m.grupo)+'<div style="min-width:0"><div style="font-weight:700;font-size:13px;color:var(--dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(m.nome)+'</div><div style="font-size:10px;color:var(--gray);display:flex;gap:4px"><span>✅'+m.pr+'</span><span>❌'+m.fa+'</span><span>🔔'+m.av+"</span></div></div></div><div style=\"text-align:right\">"+(m.pct!==null?'<div style="font-size:18px;font-weight:800;color:'+c+'">'+m.pct+"%</div>":'<div style="font-size:12px;color:#ccc">—</div>')+(m.fa>=3?'<span style="font-size:9px;color:var(--red);font-weight:700">⚠️</span>':"")+"</div></div>"+(m.tot>0?'<div class="pg"><div class="pf" style="width:'+m.pct+"%;background:"+c+'"></div></div>':"")+"</div>"});
+  h+="</div>";el.innerHTML=h;setLogos();
+}
+
+// === MENSALIDADE (admin) ===
+function rMensalidade(){
+  if(!isAdmin())return;
+  var a=atv(),el=document.getElementById("p-mensalidade"),ma=mesAno();
+  var h=hdr("Mensalidade","Controle de pagamento — "+ma);h+='<div class="ct">';
+  var pagos=0,total=a.length;
+  a.forEach(function(m){var k=ma+"_"+m.id;var st=D.mensalidades[k]||"pendente";if(st==="pago")pagos++;
+    var cor=st==="pago"?"badge-green":st==="atrasado"?"badge-red":"badge-orange";
+    h+='<div class="cd" style="padding:8px 12px"><div class="fx ac jb"><div class="fx ac gp8">'+gb(m.grupo)+'<span style="font-weight:600;font-size:13px">'+e(m.nome)+'</span></div><div class="fx gp4"><button class="bt bt-sm" data-mens="'+m.id+'-pago" style="background:'+(st==="pago"?"var(--green)":"var(--lg)")+";color:"+(st==="pago"?"#fff":"#666")+'">💰</button><button class="bt bt-sm" data-mens="'+m.id+'-pendente" style="background:'+(st==="pendente"?"var(--orange)":"var(--lg)")+";color:"+(st==="pendente"?"#fff":"#666")+'">⏳</button><button class="bt bt-sm" data-mens="'+m.id+'-atrasado" style="background:'+(st==="atrasado"?"var(--red)":"var(--lg)")+";color:"+(st==="atrasado"?"#fff":"#666")+'">❌</button></div></div></div>'});
+  h+='<div class="cd" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+pagos+'/'+total+' pagos</div><div style="font-size:11px;color:var(--gray)">R$ '+( pagos*100)+',00 recebidos este mês</div></div>';
+  h+="</div>";el.innerHTML=h;setLogos();
+}
+
+// === DOAÇÕES ===
+function rDoacoes(){
+  var a=atv(),el=document.getElementById("p-doacoes"),ma=mesAno();
+  var h=hdr("Doações",isAdmin()?"Cadastre itens e sorteie":"Veja seus itens do mês");h+='<div class="ct">';
+  if(isAdmin()){
+    h+='<button class="bt" id="btn-add-item" style="background:var(--green)"><span class="bi">➕</span> Cadastrar Item</button>';
+    h+='<div class="cd"><div style="font-size:13px;font-weight:700;margin-bottom:6px">Itens cadastrados ('+D.itensDoacao.length+')</div>';
+    if(D.itensDoacao.length){D.itensDoacao.forEach(function(it,i){h+='<div class="fx ac jb" style="padding:4px 0;border-bottom:1px solid #f0f0f0"><span style="font-size:13px">'+e(it)+'</span><button style="background:#fee;border-radius:6px;padding:4px 8px;font-size:12px" data-delitem="'+i+'">🗑️</button></div>'})}
+    else h+='<div style="color:#aaa;font-size:12px">Nenhum item cadastrado</div>';
+    h+='</div>';
+    h+='<button class="bt" id="btn-sortear" style="background:var(--purple)"'+(D.itensDoacao.length<1||a.length<1?" disabled":"")+'><span class="bi">🎲</span> Sortear Doações do Mês</button>';
+  }
+  // Mostrar sorteio do mês
+  var sorteio=D.sorteios[ma];
+  if(sorteio){
+    h+='<div class="cd"><div style="font-size:14px;font-weight:700;color:var(--dk);margin-bottom:8px">🎁 Doações de '+ma+'</div>';
+    sorteio.forEach(function(s){h+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px">'+gb(s.grupo)+'<div><div style="font-weight:600;font-size:13px">'+e(s.nome)+'</div><div style="font-size:12px;color:var(--blue)">→ '+e(s.item)+"</div></div></div>"});
+    h+="</div>";
+    if(isAdmin()){h+='<button class="bt" id="btn-wpp-doacao" style="background:var(--wpp)"><span class="bi">📱</span> Copiar Lista pro WhatsApp</button>'}
+  }
+  h+="</div>";el.innerHTML=h;setLogos();
+}
+function sortearDoacoes(){
+  var a=shuf(atv()),itens=D.itensDoacao,ma=mesAno(),result=[];
+  for(var i=0;i<a.length;i++){var item=itens[i%itens.length];result.push({id:a[i].id,nome:a[i].nome,grupo:a[i].grupo,apelido:a[i].apelido,item:item})}
+  D.sorteios[ma]=result;sv();renderAll();alert("✅ Sorteio realizado!");
+}
+function wppDoacao(){
+  var ma=mesAno(),s=D.sorteios[ma];if(!s)return;
+  var m="🎁 *Doações do mês — "+ma+"*\n\nOlá filhos! Segue a lista de doações deste mês:\n\n";
+  s.forEach(function(x){m+="• "+(x.apelido?"@"+x.apelido:x.nome)+" → *"+x.item+"*\n"});
+  m+="\nCaso tenha alguma dificuldade, comunique ao pai de santo.\n\nAxé! 🙏";
+  navigator.clipboard.writeText(m).then(function(){alert("✅ Copiado!")}).catch(function(){alert("Copie manualmente.")});
+}
+
+// === CALENDÁRIO ===
+function rCalendario(){
+  var el=document.getElementById("p-calendario");
+  var h=hdr("Calendário","Funções e atividades da casa");h+='<div class="ct">';
+  if(isAdmin()){h+='<button class="bt" id="btn-add-cal" style="background:var(--blue)"><span class="bi">➕</span> Adicionar Evento</button>'}
+  // Eventos fixos
+  var fixos=[
+    {t:"Gira Pública",d:"Sábado quinzenal, 17h (chegada: 14h)",c:"var(--red)"},
+    {t:"Desenvolvimento",d:"Quarta quinzenal, 19h (chegada: 17h)",c:"var(--orange)"},
+    {t:"Reza de Preto Velho",d:"1ª segunda do mês, 19h (chegada: 17h)",c:"var(--purple)"},
+    {t:"Grupo de Estudos",d:"Quarta quinzenal, 19h (Google Meet)",c:"var(--blue)"},
+    {t:"Projeto Raízes",d:"Última segunda do mês, 19:30h",c:"var(--green)"},
+  ];
+  h+='<div style="font-size:14px;font-weight:700;color:var(--dk);margin-bottom:4px">📌 Atividades Fixas</div>';
+  fixos.forEach(function(f){h+='<div class="cal-item" style="border-left-color:'+f.c+'"><div style="font-weight:700;font-size:13px">'+f.t+'</div><div style="font-size:12px;color:var(--gray)">'+f.d+'</div></div>'});
+  // Eventos customizados
+  if(D.calendario.length){
+    h+='<div style="font-size:14px;font-weight:700;color:var(--dk);margin:8px 0 4px">📅 Próximos Eventos</div>';
+    D.calendario.sort(function(a,b){return a.data>b.data?1:-1}).forEach(function(ev,i){
+      h+='<div class="cal-item" style="border-left-color:var(--gold)"><div class="fx jb ac"><div><div style="font-weight:700;font-size:13px">'+e(ev.titulo)+'</div><div style="font-size:12px;color:var(--gray)">'+e(ev.data)+' — '+e(ev.desc)+'</div></div>';
+      if(isAdmin())h+='<button style="background:#fee;border-radius:6px;padding:4px 8px;font-size:12px" data-delcal="'+i+'">🗑️</button>';
+      h+='</div></div>'});
+  }
+  h+="</div>";el.innerHTML=h;setLogos();
+}
+
+// === AVISOS ===
+function rAvisos(){
+  var el=document.getElementById("p-avisos");
+  var h=hdr("Mural de Avisos","Recados importantes da casa");h+='<div class="ct">';
+  if(isAdmin()){h+='<button class="bt" id="btn-add-aviso" style="background:var(--orange)"><span class="bi">📢</span> Novo Aviso</button>'}
+  if(!D.avisos.length)h+='<div style="text-align:center;padding:30px;color:#aaa">Nenhum aviso publicado.</div>';
+  D.avisos.slice().reverse().forEach(function(av,i){
+    var ri=D.avisos.length-1-i;
+    h+='<div class="aviso-card"><div class="fx jb"><div style="font-size:10px;color:var(--gray)">'+e(av.data)+'</div>';
+    if(isAdmin())h+='<button style="background:none;font-size:12px;color:var(--red)" data-delaviso="'+ri+'">🗑️</button>';
+    h+='</div><div style="font-size:14px;font-weight:700;margin-top:4px">'+e(av.titulo)+'</div><div style="font-size:13px;color:#444;margin-top:4px;white-space:pre-wrap">'+e(av.texto)+'</div></div>'});
+  h+="</div>";el.innerHTML=h;setLogos();
+}
+
+// === RENDER ALL ===
+function renderAll(){rHome();if(isAdmin()){rMembros();rPresenca();rRelatorio();rMensalidade()}rEscala();rDoacoes();rCalendario();rAvisos()}
+
+// === MODALS ===
+function addMForm(eid){var m=eid?D.membros.find(function(x){return x.id===eid}):null;var nm=m?e(m.nome):"",ap=m?e(m.apelido||""):"",gr=m?m.grupo:"A";var h='<div class="ig"><label>Nome completo</label><input id="f-nm" value="'+nm+'"></div><div class="ig"><label>Apelido/WhatsApp</label><input id="f-ap" value="'+ap+'"></div><div class="ig"><label>Grupo</label><div class="fx gp6">';GR.forEach(function(g){h+='<button data-grp="'+g+'" style="flex:1;padding:10px;border-radius:10px;background:'+(gr===g?GC[g]:"var(--lg)")+";color:"+(gr===g?"#fff":"#666")+';font-weight:800;font-size:16px">'+g+"</button>"});h+='</div></div><input type="hidden" id="f-gr" value="'+gr+'"><input type="hidden" id="f-eid" value="'+(eid||"")+'">';h+='<button class="bt" id="btn-save-m" style="background:var(--dk3)"><span class="bi">✅</span>'+(m?"Salvar":"Cadastrar")+"</button>";openM(m?"Editar":"Novo Membro",h)}
+function loteForm(){openM("Importar Lista",'<p style="font-size:12px;color:#666;margin:0 0 10px">Um por linha: <b>Nome, Apelido, Grupo</b></p><div class="ig"><textarea id="f-lote" rows="6" style="font-family:monospace;font-size:13px" placeholder="Fernando, ~Fernando, A"></textarea></div><button class="bt" id="btn-do-lote" style="background:var(--blue)"><span class="bi">📥</span>Importar</button>')}
+function addItemForm(){openM("Novo Item de Doação",'<div class="ig"><label>Nome do item</label><input id="f-item" placeholder="Ex: Pacote de velas"></div><button class="bt" id="btn-save-item" style="background:var(--green)"><span class="bi">✅</span>Adicionar</button>')}
+function addCalForm(){openM("Novo Evento",'<div class="ig"><label>Título</label><input id="f-cal-tit" placeholder="Ex: Festa de Iansã"></div><div class="ig"><label>Data</label><input id="f-cal-data" placeholder="Ex: 15/06/2026"></div><div class="ig"><label>Descrição</label><input id="f-cal-desc" placeholder="Ex: Chegada às 10h"></div><button class="bt" id="btn-save-cal" style="background:var(--blue)"><span class="bi">✅</span>Adicionar</button>')}
+function addAvisoForm(){openM("Novo Aviso",'<div class="ig"><label>Título</label><input id="f-av-tit" placeholder="Ex: Aviso importante"></div><div class="ig"><label>Mensagem</label><textarea id="f-av-txt" rows="4" placeholder="Digite o recado..."></textarea></div><button class="bt" id="btn-save-aviso" style="background:var(--orange)"><span class="bi">📢</span>Publicar</button>')}
+function showWpp(gid){var gi=D.giras.find(function(g){return g.id===gid});if(!gi)return;openM("📱 WhatsApp",'<pre class="wp">'+e(wppMsg(gi))+'</pre><button class="bt" id="btn-copy" data-gid="'+gid+'" style="background:var(--wpp);margin-top:10px"><span class="bi">📋</span>Copiar</button>')}
+function trocaForm(ei,mi){var a=atv(),at=eS.esc[ei].membros[mi];var h='<p style="font-size:12px;color:#666;margin:0 0 10px">Substituindo: <b>'+e(at.nome)+'</b></p><div style="max-height:250px;overflow:auto;display:flex;flex-direction:column;gap:4px">';a.forEach(function(m){h+='<button data-pick="'+m.id+'" data-ei="'+ei+'" data-mi="'+mi+'" style="padding:8px 12px;border-radius:10px;border:1px solid #eee;background:'+(m.id===at.id?"#e8f5e9":"#fff")+';display:flex;align-items:center;gap:6px;text-align:left;width:100%">'+gb(m.grupo)+'<span style="font-size:13px">'+e(m.nome)+"</span></button>"});h+="</div>";openM("Trocar",h)}
+
+// === EVENT DELEGATION ===
+document.addEventListener("click",function(ev){
+  var t=ev.target,btn=t.closest("button"),div=t.closest("div");
+  if(btn&&btn.classList.contains("tb")){var tab=btn.getAttribute("data-tab");if(tab)go(tab);return}
+  if(btn&&btn.getAttribute("data-go")){go(btn.getAttribute("data-go"));return}
+  if(btn&&btn.id==="btn-export"){exportD();return}
+  if(btn&&btn.id==="m-close"){closeM();return}
+  if(t.id==="modal"||t.classList.contains("mo")){closeM();return}
+  if(btn&&btn.id==="btn-logout"){mode="";document.getElementById("app").style.display="none";document.getElementById("login-screen").style.display="flex";document.getElementById("login-senha").style.display="none";document.getElementById("input-senha").value="";return}
+  if(btn&&btn.id==="btn-add"){addMForm();return}
+  if(btn&&btn.id==="btn-lote"){loteForm();return}
+  if(btn&&btn.classList.contains("ch")&&btn.getAttribute("data-filt")){fM=btn.getAttribute("data-filt");rMembros();return}
+  if(btn&&btn.getAttribute("data-edit")){addMForm(parseInt(btn.getAttribute("data-edit")));return}
+  if(btn&&btn.getAttribute("data-del")){if(confirm("Desativar?")){var m=D.membros.find(function(x){return x.id===parseInt(btn.getAttribute("data-del"))});if(m){m.ativo=false;sv();renderAll()}}return}
+  if(btn&&btn.getAttribute("data-grp")){var g=btn.getAttribute("data-grp");document.getElementById("f-gr").value=g;btn.parentElement.querySelectorAll("button").forEach(function(b){var bg=b.getAttribute("data-grp");b.style.background=bg===g?GC[bg]:"var(--lg)";b.style.color=bg===g?"#fff":"#666"});return}
+  if(btn&&btn.id==="btn-save-m"){var nm=document.getElementById("f-nm").value.trim();if(!nm)return alert("Nome!");var ap=document.getElementById("f-ap").value.trim()||null,gr=document.getElementById("f-gr").value,eid=document.getElementById("f-eid").value;if(eid){var m=D.membros.find(function(x){return x.id===parseInt(eid)});if(m){m.nome=nm;m.apelido=ap;m.grupo=gr}}else D.membros.push({id:D.nMid++,nome:nm,apelido:ap,grupo:gr,ativo:true});sv();closeM();renderAll();return}
+  if(btn&&btn.id==="btn-do-lote"){var txt=document.getElementById("f-lote").value.trim();if(!txt)return;var ok=0;txt.split("\n").forEach(function(l){var p=l.split(",").map(function(x){return x.trim()});if(p.length>=2){var nm=p[0],ap=p[1]||null,gr=(p[2]||"A").toUpperCase();if(GR.indexOf(gr)>=0&&nm){D.membros.push({id:D.nMid++,nome:nm,apelido:ap,grupo:gr,ativo:true});ok++}}});sv();closeM();renderAll();alert("✅ "+ok+" importados!");return}
+  if(btn&&btn.id==="btn-gerar"){var dt=document.getElementById("e-data").value.trim();if(!dt)return alert("Data!");eS={etapa:"preview",gira:{id:D.nGid,data:dt,status:"rascunho",escala:gerarEsc(dt),presenca:{}},esc:gerarEsc(dt)};eS.gira.escala=eS.esc;rEscala();return}
+  if(btn&&btn.id==="btn-regen"){eS.esc=gerarEsc(eS.gira.data);eS.gira.escala=eS.esc;rEscala();return}
+  if(btn&&btn.id==="btn-canc"){eS={etapa:"inicio"};rEscala();return}
+  if(btn&&btn.id==="btn-pub"){var gi=JSON.parse(JSON.stringify(eS.gira));gi.status="publicada";D.giras.push(gi);D.nGid++;D.rot=(D.rot+1)%4;sv();eS={etapa:"inicio"};renderAll();alert("✅ Publicada!");return}
+  if(btn&&btn.getAttribute("data-troca")){var p=btn.getAttribute("data-troca").split("-");trocaForm(parseInt(p[0]),parseInt(p[1]));return}
+  if(btn&&btn.getAttribute("data-pick")){var mid=parseInt(btn.getAttribute("data-pick")),ei=parseInt(btn.getAttribute("data-ei")),mi=parseInt(btn.getAttribute("data-mi")),m=D.membros.find(function(x){return x.id===mid});if(m){eS.esc[ei].membros[mi]=JSON.parse(JSON.stringify(m));eS.gira.escala=eS.esc}closeM();rEscala();return}
+  if(btn&&btn.getAttribute("data-wpp")){showWpp(parseInt(btn.getAttribute("data-wpp")));return}
+  if(btn&&btn.id==="btn-copy"){var gid=parseInt(btn.getAttribute("data-gid")),gi=D.giras.find(function(g){return g.id===gid});if(gi)navigator.clipboard.writeText(wppMsg(gi)).then(function(){btn.innerHTML='<span class="bi">✅</span>Copiado!';setTimeout(function(){btn.innerHTML='<span class="bi">📋</span>Copiar'},2000)});return}
+  if(btn&&btn.getAttribute("data-gopres")){pGid=parseInt(btn.getAttribute("data-gopres"));go("presenca");return}
+  if(div&&div.getAttribute("data-pgira")){pGid=parseInt(div.getAttribute("data-pgira"));rPresenca();return}
+  if(btn&&btn.id==="btn-pvolt"){pGid=null;rPresenca();return}
+  if(btn&&btn.getAttribute("data-pmark")){var p=btn.getAttribute("data-pmark").split("-"),mid=parseInt(p[0]),st=p[1],gi=D.giras.find(function(g){return g.id===pGid});if(gi){if(!gi.presenca)gi.presenca={};gi.presenca[mid]=st;sv();rPresenca()}return}
+  if(btn&&btn.getAttribute("data-mens")){var p=btn.getAttribute("data-mens").split("-"),mid=parseInt(p[0]),st=p[1],ma=mesAno(),k=ma+"_"+mid;D.mensalidades[k]=st;sv();rMensalidade();return}
+  if(btn&&btn.id==="btn-add-item"){addItemForm();return}
+  if(btn&&btn.id==="btn-save-item"){var it=document.getElementById("f-item").value.trim();if(!it)return;D.itensDoacao.push(it);sv();closeM();renderAll();return}
+  if(btn&&btn.getAttribute("data-delitem")!==null&&btn.getAttribute("data-delitem")!==undefined){var i=parseInt(btn.getAttribute("data-delitem"));D.itensDoacao.splice(i,1);sv();renderAll();return}
+  if(btn&&btn.id==="btn-sortear"){if(confirm("Sortear doações deste mês? Isso vai redistribuir os itens.")){sortearDoacoes()}return}
+  if(btn&&btn.id==="btn-wpp-doacao"){wppDoacao();return}
+  if(btn&&btn.id==="btn-add-cal"){addCalForm();return}
+  if(btn&&btn.id==="btn-save-cal"){var tit=document.getElementById("f-cal-tit").value.trim(),dt=document.getElementById("f-cal-data").value.trim(),desc=document.getElementById("f-cal-desc").value.trim();if(!tit||!dt)return alert("Preencha título e data!");D.calendario.push({titulo:tit,data:dt,desc:desc});sv();closeM();renderAll();return}
+  if(btn&&btn.getAttribute("data-delcal")!==null&&btn.getAttribute("data-delcal")!==undefined){D.calendario.splice(parseInt(btn.getAttribute("data-delcal")),1);sv();renderAll();return}
+  if(btn&&btn.id==="btn-add-aviso"){addAvisoForm();return}
+  if(btn&&btn.id==="btn-save-aviso"){var tit=document.getElementById("f-av-tit").value.trim(),txt=document.getElementById("f-av-txt").value.trim();if(!tit||!txt)return alert("Preencha tudo!");D.avisos.push({titulo:tit,texto:txt,data:new Date().toLocaleDateString("pt-BR")});sv();closeM();renderAll();return}
+  if(btn&&btn.getAttribute("data-delaviso")!==null&&btn.getAttribute("data-delaviso")!==undefined){D.avisos.splice(parseInt(btn.getAttribute("data-delaviso")),1);sv();renderAll();return}
+});
+document.addEventListener("change",function(ev){if(ev.target.id==="file-import"){importD(ev.target.files[0]);ev.target.value=""}});
+</script>
+</body>
+</html>
