@@ -118,7 +118,7 @@ var FASES=["PR\u00C9-GIRA","DURANTE A GIRA","P\u00D3S-GIRA"];
 var FCOR={"PR\u00C9-GIRA":"var(--orange)","DURANTE A GIRA":"var(--blue)","P\u00D3S-GIRA":"var(--green)"};
 
 var D={membros:[],giras:[],tarefas:[],rot:0,nMid:1,nGid:1,mensalidades:{},itensDoacao:[],sorteios:{},calendario:[],avisos:[]};
-var mode="",cTab="home",fM="todos",eS={etapa:"inicio",gira:null,esc:null,sel:null},pGid=null;
+var mode="",cTab="home",fM="todos",eS={etapa:"inicio",gira:null,esc:null,sel:null,giraAberta:null},pGid=null;
 var dataLoaded=false;
 
 // ========== FIRESTORE HELPERS ==========
@@ -235,7 +235,7 @@ function buildTabs(){
 
 function go(tab){
   cTab=tab;
-  if(tab==="escala")eS={etapa:"inicio",gira:null,esc:null,sel:null};
+  if(tab==="escala")eS={etapa:"inicio",gira:null,esc:null,sel:null,giraAberta:null};
   if(tab==="presenca")pGid=null;
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on")});
   var el=document.getElementById("p-"+tab);
@@ -410,7 +410,18 @@ function rEscala(){
       h+='<div style="font-weight:700;font-size:14px">Gira '+esc(g.data)+'</div>';
       h+='<div style="font-size:11px;color:var(--gray)">'+tot+' pessoas</div></div><div class="fx gp4">';
       if(isA()){h+='<button class="bt bt-sm" style="background:var(--wpp)" data-wpp="'+g.id+'">\uD83D\uDCF1</button>';h+='<button class="bt bt-sm" style="background:var(--orange)" data-gopres="'+g.id+'">\u2705</button>';h+='<button class="bt bt-sm" style="background:var(--red)" data-delgira="'+g.id+'">\uD83D\uDDD1\uFE0F</button>'}
+      else{h+='<button class="bt bt-sm" style="background:var(--dk3)" data-vergira="'+g.id+'">\uD83D\uDC41 Ver</button>'}
       h+='</div></div></div>';
+      // Detalhe da gira expandida (modo filho)
+      if(!isA()&&eS.giraAberta===g.id){
+        var fa2="";
+        g.escala.forEach(function(item){
+          if(item.fase!==fa2){fa2=item.fase;h+='<div class="fh" style="background:'+(FCOR[fa2]||"#888")+';margin-bottom:4px">'+fa2+'</div>'}
+          h+='<div class="cd" style="padding:8px 12px;margin-bottom:4px"><div style="font-size:12px;font-weight:700;color:#444;margin-bottom:4px">'+esc(item.tarefa)+'</div><div class="fx fw gp4">';
+          item.membros.forEach(function(m){h+='<span class="mc2">'+gb(m.grupo)+' '+(m.apelido?'@'+esc(m.apelido):esc(m.nome))+'</span>'});
+          h+='</div></div>';
+        });
+      }
     });
   }
   h+='</div>';el.innerHTML=h;setLogos();
@@ -578,7 +589,7 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.getAttribute("data-pick")){var mid=parseInt(btn.getAttribute("data-pick")),ei=parseInt(btn.getAttribute("data-ei")),mi=parseInt(btn.getAttribute("data-mi"));var m=D.membros.find(function(x){return x.id===mid});if(m){eS.esc[ei].membros[mi]=JSON.parse(JSON.stringify(m));eS.gira.escala=eS.esc}closeM();rEscala();return}
   if(btn&&btn.getAttribute("data-wpp")){var gi=D.giras.find(function(g){return g.id===parseInt(btn.getAttribute("data-wpp"))});if(gi)openM("\uD83D\uDCF1 WhatsApp",'<pre class="wp">'+esc(wppMsg(gi))+'</pre><button class="bt" id="btn-copy" data-gid="'+gi.id+'" style="background:var(--wpp);margin-top:10px">\uD83D\uDCCB Copiar</button>');return}
   if(btn&&btn.id==="btn-copy"){var gid=parseInt(btn.getAttribute("data-gid")),gi=D.giras.find(function(g){return g.id===gid});if(gi)navigator.clipboard.writeText(wppMsg(gi)).then(function(){btn.textContent="\u2705 Copiado!";setTimeout(function(){btn.textContent="\uD83D\uDCCB Copiar"},2000)});return}
-  if(btn&&btn.getAttribute("data-gopres")){pGid=parseInt(btn.getAttribute("data-gopres"));go("presenca");return}
+  if(btn&&btn.getAttribute("data-vergira")){var gid2=parseInt(btn.getAttribute("data-vergira"));eS.giraAberta=(eS.giraAberta===gid2?null:gid2);rEscala();return}
   if(btn&&btn.getAttribute("data-delgira")){if(confirm("Tem certeza que deseja apagar esta gira? Essa a\u00E7\u00E3o n\u00E3o pode ser desfeita.")){var gid=parseInt(btn.getAttribute("data-delgira"));D.giras=D.giras.filter(function(g){return g.id!==gid});sv();renderAll()}return}
   if(div&&div.getAttribute("data-pgira")){pGid=parseInt(div.getAttribute("data-pgira"));rPresenca();return}
   if(btn&&btn.id==="btn-pvolt"){pGid=null;rPresenca();return}
