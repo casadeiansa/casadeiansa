@@ -114,11 +114,11 @@ var PASS="iansa2026";
 var GR=["A","B","C","D"];
 var GC={A:"#e74c3c",B:"#3498db",C:"#2ecc71",D:"#f39c12"};
 var SM={presente:{i:"\u2705",l:"Presente",c:"#2ecc71"},faltou:{i:"\u274C",l:"Faltou",c:"#e74c3c"},avisou:{i:"\uD83D\uDD14",l:"Avisou",c:"#f39c12"},trocou:{i:"\uD83D\uDD04",l:"Trocou",c:"#3498db"}};
-var FASES=["PR\u00C9-GIRA","DURANTE A GIRA","P\u00D3S-GIRA"];
-var FCOR={"PR\u00C9-GIRA":"var(--orange)","DURANTE A GIRA":"var(--blue)","P\u00D3S-GIRA":"var(--green)"};
+var FASES_PADRAO=["PR\u00C9","DURANTE","P\u00D3S"];
+var FCOR={"PR\u00C9":"var(--orange)","DURANTE":"var(--blue)","P\u00D3S":"var(--green)","PR\u00C9-GIRA":"var(--orange)","DURANTE A GIRA":"var(--blue)","P\u00D3S-GIRA":"var(--green)"};
 
-var D={membros:[],giras:[],tarefas:[],rot:0,nMid:1,nGid:1,mensalidades:{},itensDoacao:[],sorteios:{},calendario:[],avisos:[]};
-var mode="",cTab="home",fM="todos",eS={etapa:"inicio",gira:null,esc:null,sel:null,giraAberta:null},pGid=null;
+var D={membros:[],giras:[],tarefas:[],tiposEscala:["Gira"],rot:0,nMid:1,nGid:1,mensalidades:{},itensDoacao:[],sorteios:{},calendario:[],avisos:[]};
+var mode="",cTab="home",fM="todos",fTipo="Gira",eS={etapa:"inicio",gira:null,esc:null,sel:null,tipo:"Gira"},pGid=null;
 var dataLoaded=false;
 
 // ========== FIRESTORE HELPERS ==========
@@ -132,6 +132,8 @@ function loadFromFirebase(cb){
       if(!D.giras)D.giras=[];
       if(!D.tarefas||!D.tarefas.length)D.tarefas=defaultTarefas();
       if(!D.mensalidades)D.mensalidades={};
+      if(!D.valorMensalidade)D.valorMensalidade=0;
+      if(!D.tiposEscala||!D.tiposEscala.length)D.tiposEscala=["Gira"];
       if(!D.itensDoacao)D.itensDoacao=[];
       if(!D.sorteios)D.sorteios={};
       if(!D.calendario)D.calendario=[];
@@ -139,7 +141,7 @@ function loadFromFirebase(cb){
       if(!D.rot)D.rot=0;
       if(!D.nMid)D.nMid=1;
       if(!D.nGid)D.nGid=1;
-      D.tarefas.forEach(function(t){if(!t.fixos)t.fixos=[]});
+      D.tarefas.forEach(function(t){if(!t.fixos)t.fixos=[];if(!t.tipo)t.tipo="Gira"});
     }else{
       D.tarefas=defaultTarefas();
       sv();
@@ -162,25 +164,25 @@ function sv(){
 
 function defaultTarefas(){
   return[
-    {fase:"PR\u00C9-GIRA",nome:"Filho de Trabalho Respons\u00E1vel",qtd:1,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Varrer e passar pano no terreiro + cuspidores",qtd:4,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Varrer cal\u00E7ada e guardar vassouras/rodos/bacias",qtd:1,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Varrer, passar pano e organizar o 2\u00BA andar",qtd:3,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Limpar as cadeiras",qtd:2,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Organizar a cozinha",qtd:2,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Lavar os 3 banheiros e repor utens\u00EDlios",qtd:3,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Lavar panos de ch\u00E3o e estender",qtd:1,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Estoque",qtd:1,fixos:[]},
-    {fase:"PR\u00C9-GIRA",nome:"Cuidar da casinha de Exu",qtd:1,fixos:[]},
-    {fase:"DURANTE A GIRA",nome:"Caixa",qtd:1,fixos:[]},
-    {fase:"DURANTE A GIRA",nome:"Cantina",qtd:2,fixos:[]},
-    {fase:"DURANTE A GIRA",nome:"Chamar a assist\u00EAncia",qtd:3,fixos:[]},
-    {fase:"P\u00D3S-GIRA",nome:"Respons\u00E1vel P\u00F3s-Gira",qtd:1,fixos:[]},
-    {fase:"P\u00D3S-GIRA",nome:"Arrumar a cozinha",qtd:2,fixos:[]},
-    {fase:"P\u00D3S-GIRA",nome:"Lavar os 2 banheiros",qtd:2,fixos:[]},
-    {fase:"P\u00D3S-GIRA",nome:"Varrer e passar pano + guardar cuspidores/copos de vela",qtd:4,fixos:[]},
-    {fase:"P\u00D3S-GIRA",nome:"Tirar lixo, guardar vassouras, lavar panos",qtd:1,fixos:[]},
-    {fase:"P\u00D3S-GIRA",nome:"Organizar 2\u00BA andar (verificar pertences)",qtd:1,fixos:[]}
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Filho de Trabalho Respons\u00E1vel",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Varrer e passar pano no terreiro + cuspidores",qtd:4,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Varrer cal\u00E7ada e guardar vassouras/rodos/bacias",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Varrer, passar pano e organizar o 2\u00BA andar",qtd:3,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Limpar as cadeiras",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Organizar a cozinha",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Lavar os 3 banheiros e repor utens\u00EDlios",qtd:3,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Lavar panos de ch\u00E3o e estender",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Estoque",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Cuidar da casinha de Exu",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"DURANTE A GIRA",nome:"Caixa",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"DURANTE A GIRA",nome:"Cantina",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"DURANTE A GIRA",nome:"Chamar a assist\u00EAncia",qtd:3,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Respons\u00E1vel P\u00F3s-Gira",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Arrumar a cozinha",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Lavar os 2 banheiros",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Varrer e passar pano + guardar cuspidores/copos de vela",qtd:4,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Tirar lixo, guardar vassouras, lavar panos",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Organizar 2\u00BA andar (verificar pertences)",qtd:1,fixos:[]}
   ];
 }
 
@@ -235,7 +237,7 @@ function buildTabs(){
 
 function go(tab){
   cTab=tab;
-  if(tab==="escala")eS={etapa:"inicio",gira:null,esc:null,sel:null,giraAberta:null};
+  if(tab==="escala")eS={etapa:"inicio",gira:null,esc:null,sel:null};
   if(tab==="presenca")pGid=null;
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on")});
   var el=document.getElementById("p-"+tab);
@@ -328,10 +330,24 @@ function rMembros(){
 function rTarefas(){
   if(!isA())return;var el=document.getElementById("p-tarefas");
   var h=mkHdr("Tarefas","Cadastre e gerencie");h+='<div class="ct">';
-  h+='<button class="bt" id="btn-add-tarefa" style="background:var(--green)"><span class="bi">\u2795</span> Nova Tarefa</button>';
-  FASES.forEach(function(fase){
-    var ts=D.tarefas.filter(function(t){return t.fase===fase});
+  h+='<div class="fx gp8">';
+  h+='<button class="bt" id="btn-add-tarefa" style="background:var(--green);flex:1"><span class="bi">\u2795</span> Nova Tarefa</button>';
+  h+='<button class="bt" id="btn-add-tipo" style="background:var(--purple);flex:1"><span class="bi">\u2795</span> Novo Tipo</button>';
+  h+='</div>';
+  h+='<div class="fx gp6" style="overflow-x:auto;flex-wrap:wrap">';
+  D.tiposEscala.forEach(function(tp){
+    var n=D.tarefas.filter(function(t){return t.tipo===tp}).length;
+    h+='<div class="fx ac gp4">';
+    h+='<button class="ch'+(fTipo===tp?' on':'')+'" data-ftipo="'+esc(tp)+'">'+esc(tp)+' ('+n+')</button>';
+    if(tp!=="Gira")h+='<button style="background:#fee;border-radius:50%;width:22px;height:22px;font-size:11px;display:flex;align-items:center;justify-content:center" data-del-tipo="'+esc(tp)+'">\u2715</button>';
+    h+='</div>';
+  });
+  h+='</div>';
+  var tarefasTipo=D.tarefas.filter(function(t){return t.tipo===fTipo});
+  FASES_PADRAO.forEach(function(fase){
+    var ts=tarefasTipo.filter(function(t){return t.fase===fase});
     h+='<div class="fh" style="background:'+(FCOR[fase]||"#888")+'">'+fase+' ('+ts.length+')</div>';
+    if(!ts.length)h+='<div style="padding:8px 12px;color:#aaa;font-size:12px">Nenhuma tarefa nesta fase</div>';
     ts.forEach(function(t){
       var idx=D.tarefas.indexOf(t);
       h+='<div class="cd" style="padding:10px 12px"><div class="fx ac jb"><div style="flex:1;min-width:0">';
@@ -368,15 +384,22 @@ function rEscala(){
   var h=mkHdr("Escala",isA()?"Gere e gerencie":"Confira a escala");h+='<div class="ct">';
   if(isA()&&eS.etapa==="inicio"){
     h+='<div class="cd"><div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:6px">\uD83D\uDCCB Nova Escala</div>';
-    h+='<div class="ig"><label>Data da gira</label><input id="e-data" placeholder="Ex: 20/04/2026"></div>';
+    h+='<div class="ig"><label>Tipo</label><div class="fx gp6" style="flex-wrap:wrap">';
+    D.tiposEscala.forEach(function(tp){
+      var sel=eS.tipo===tp;
+      h+='<button class="ch'+(sel?' on':'')+'" data-esc-tipo="'+esc(tp)+'">'+esc(tp)+'</button>';
+    });
+    h+='</div></div>';
+    h+='<div class="ig"><label>Data</label><input id="e-data" placeholder="Ex: 20/04/2026"></div>';
     h+='<button class="bt" id="btn-sel-tarefas" style="background:var(--blue)"'+(a.length<5?' disabled':'')+'><span class="bi">\u2611\uFE0F</span> Selecionar Tarefas</button>';
     if(a.length<5)h+='<p style="font-size:11px;color:var(--red)">\u26A0\uFE0F M\u00EDnimo 5 membros</p>';
     h+='</div>';
   }
   if(isA()&&eS.etapa==="selecionar"){
-    h+='<div class="cd" style="background:#f0f4ff;border:2px solid var(--blue)"><div style="font-size:15px;font-weight:800;color:var(--blue)">\u2611\uFE0F Selecione as tarefas desta gira</div></div>';
-    FASES.forEach(function(fase){
-      var ts=D.tarefas.filter(function(t){return t.fase===fase});if(!ts.length)return;
+    h+='<div class="cd" style="background:#f0f4ff;border:2px solid var(--blue)"><div style="font-size:15px;font-weight:800;color:var(--blue)">\u2611\uFE0F Tarefas de '+esc(eS.tipo)+'</div><div style="font-size:11px;color:var(--gray);margin-top:3px">Marque as que entram nesta escala</div></div>';
+    var tarefasTipo=D.tarefas.filter(function(t){return t.tipo===eS.tipo});
+    FASES_PADRAO.forEach(function(fase){
+      var ts=tarefasTipo.filter(function(t){return t.fase===fase});if(!ts.length)return;
       h+='<div class="fh" style="background:'+(FCOR[fase]||"#888")+'">'+fase+'</div>';
       ts.forEach(function(t){
         var idx=D.tarefas.indexOf(t),checked=eS.sel.indexOf(idx)>=0;
@@ -403,33 +426,24 @@ function rEscala(){
     h+='<button class="bt" id="btn-pub" style="background:var(--green)"><span class="bi">\u2705</span> Publicar</button>';
   }
   if(p.length){
-    h+='<h3 style="font-size:14px;font-weight:700;color:var(--dk);margin:4px 0">\uD83D\uDCC5 Giras publicadas</h3>';
-    p.slice(-5).reverse().forEach(function(g){
+    h+='<h3 style="font-size:14px;font-weight:700;color:var(--dk);margin:4px 0">\uD83D\uDCC5 Escalas publicadas</h3>';
+    p.slice(-8).reverse().forEach(function(g){
       var tot=g.escala.reduce(function(s,x){return s+x.membros.length},0);
+      var tipo=g.tipo||"Gira";
       h+='<div class="cd" style="padding:10px 12px"><div class="fx jb ac"><div>';
-      h+='<div style="font-weight:700;font-size:14px">Gira '+esc(g.data)+'</div>';
+      h+='<div style="font-weight:700;font-size:14px">'+esc(tipo)+' '+esc(g.data)+'</div>';
       h+='<div style="font-size:11px;color:var(--gray)">'+tot+' pessoas</div></div><div class="fx gp4">';
       if(isA()){h+='<button class="bt bt-sm" style="background:var(--wpp)" data-wpp="'+g.id+'">\uD83D\uDCF1</button>';h+='<button class="bt bt-sm" style="background:var(--orange)" data-gopres="'+g.id+'">\u2705</button>';h+='<button class="bt bt-sm" style="background:var(--red)" data-delgira="'+g.id+'">\uD83D\uDDD1\uFE0F</button>'}
-      else{h+='<button class="bt bt-sm" style="background:var(--dk3)" data-vergira="'+g.id+'">\uD83D\uDC41 Ver</button>'}
       h+='</div></div></div>';
-      // Detalhe da gira expandida (modo filho)
-      if(!isA()&&eS.giraAberta===g.id){
-        var fa2="";
-        g.escala.forEach(function(item){
-          if(item.fase!==fa2){fa2=item.fase;h+='<div class="fh" style="background:'+(FCOR[fa2]||"#888")+';margin-bottom:4px">'+fa2+'</div>'}
-          h+='<div class="cd" style="padding:8px 12px;margin-bottom:4px"><div style="font-size:12px;font-weight:700;color:#444;margin-bottom:4px">'+esc(item.tarefa)+'</div><div class="fx fw gp4">';
-          item.membros.forEach(function(m){h+='<span class="mc2">'+gb(m.grupo)+' '+(m.apelido?'@'+esc(m.apelido):esc(m.nome))+'</span>'});
-          h+='</div></div>';
-        });
-      }
     });
   }
   h+='</div>';el.innerHTML=h;setLogos();
 }
 
 function wppMsg(gi){
-  var em={"PR\u00C9-GIRA":"\uD83D\uDD38","DURANTE A GIRA":"\uD83D\uDD39","P\u00D3S-GIRA":"\uD83D\uDD38"};
-  var m="Boa tarde, filhos! Ben\u00E7\u00E3o a todos! \uD83D\uDE4F\n\nSegue a escala da gira de *"+gi.data+"*:\n\n\uD83D\uDCCC *IMPORTANTE: Quem N\u00C3O puder comparecer, avise.*\n\u26A0\uFE0F *Quem n\u00E3o responder, est\u00E1 CONFIRMADO.*\n",fa="";
+  var tipo=gi.tipo||"Gira";
+  var em={"PR\u00C9-GIRA":"\uD83D\uDD38","DURANTE A GIRA":"\uD83D\uDD39","P\u00D3S-GIRA":"\uD83D\uDD38","PR\u00C9":"\uD83D\uDD38","DURANTE":"\uD83D\uDD39","P\u00D3S":"\uD83D\uDD38"};
+  var m="Boa tarde, filhos! Ben\u00E7\u00E3o a todos! \uD83D\uDE4F\n\nSegue a escala da *"+tipo+"* de *"+gi.data+"*:\n\n\uD83D\uDCCC *IMPORTANTE: Quem N\u00C3O puder comparecer, avise.*\n\u26A0\uFE0F *Quem n\u00E3o responder, est\u00E1 CONFIRMADO.*\n",fa="";
   gi.escala.forEach(function(item){if(item.fase!==fa){fa=item.fase;m+="\n"+(em[fa]||"\u25AA\uFE0F")+" *"+fa+"*\n"}var ns=item.membros.map(function(x){return x.apelido?"@"+x.apelido:x.nome}).join(", ");m+="\u2022 "+item.tarefa+": "+ns+"\n"});
   m+="\n\uD83D\uDC9B Se todos colaborarem, nossa casa fica linda!\nAx\u00E9! \uD83D\uDE4F\u2728";return m;
 }
@@ -486,7 +500,13 @@ function rRelatorio(){
 
 function rMensalidade(){
   if(!isA())return;var a=atv(),el=document.getElementById("p-mensalidade"),ma=mesAno(),pagos=0;
+  var valorMens=D.valorMensalidade||0;
   var h=mkHdr("Mensalidade",ma);h+='<div class="ct">';
+  h+='<div class="cd" style="text-align:center;padding:12px">';
+  h+='<div style="font-size:12px;color:var(--gray);font-weight:600">Valor da mensalidade</div>';
+  h+='<div style="font-size:28px;font-weight:800;color:var(--dk);margin:4px 0">R$ '+(valorMens>0?valorMens.toFixed(2).replace(".",","):"--")+'</div>';
+  h+='<button class="bt bt-sm" id="btn-edit-valor" style="background:var(--blue)">Alterar valor</button>';
+  h+='</div>';
   a.forEach(function(m){
     var k=ma+"_"+m.id,st=D.mensalidades[k]||"pendente";if(st==="pago")pagos++;
     h+='<div class="cd" style="padding:8px 12px"><div class="fx ac jb"><div class="fx ac gp8">'+gb(m.grupo);
@@ -496,8 +516,9 @@ function rMensalidade(){
     h+='<button class="bt bt-sm" data-mens="'+m.id+'-atrasado" style="background:'+(st==="atrasado"?"var(--red)":"var(--lg)")+';color:'+(st==="atrasado"?"#fff":"#666")+'">\u274C</button>';
     h+='</div></div></div>';
   });
-  h+='<div class="cd" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+pagos+'/'+a.length+'</div>';
-  h+='<div style="font-size:11px;color:var(--gray)">R$ '+(pagos*100)+',00</div></div></div>';
+  h+='<div class="cd" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+pagos+'/'+a.length+' pagos</div>';
+  if(valorMens>0)h+='<div style="font-size:11px;color:var(--gray)">R$ '+(pagos*valorMens).toFixed(2).replace(".",",")+' recebidos</div>';
+  h+='</div></div>';
   el.innerHTML=h;setLogos();
 }
 
@@ -580,21 +601,28 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.hasAttribute("data-del-tarefa")){if(confirm("Remover?")){D.tarefas.splice(parseInt(btn.getAttribute("data-del-tarefa")),1);sv();renderAll()}return}
   if(btn&&btn.id==="btn-save-tarefa"){saveT();return}
   // Escala
-  if(btn&&btn.id==="btn-sel-tarefas"){var dt=document.getElementById("e-data");if(!dt||!dt.value.trim()){alert("Data!");return}var all=[];D.tarefas.forEach(function(t,i){all.push(i)});eS={etapa:"selecionar",dataGira:dt.value.trim(),sel:all};rEscala();return}
-  if(btn&&btn.id==="btn-gerar-esc"){var st=eS.sel.map(function(i){return D.tarefas[i]});var esc2=gerarEsc(st);eS.etapa="preview";eS.gira={id:D.nGid,data:eS.dataGira,status:"rascunho",escala:esc2,presenca:{}};eS.esc=esc2;rEscala();return}
-  if(btn&&btn.id==="btn-canc-sel"||btn&&btn.id==="btn-canc"){eS={etapa:"inicio"};rEscala();return}
+  if(btn&&btn.getAttribute("data-esc-tipo")){eS.tipo=btn.getAttribute("data-esc-tipo");rEscala();return}
+  if(btn&&btn.getAttribute("data-ftipo")){fTipo=btn.getAttribute("data-ftipo");rTarefas();return}
+  if(btn&&btn.id==="btn-add-tipo"){openM("Novo Tipo de Escala",'<div class="ig"><label>Nome do tipo</label><input id="f-novo-tipo" placeholder="Ex: Festa de Ogum"></div><button class="bt" id="btn-save-tipo" style="background:var(--purple)">\u2705 Criar</button>');return}
+  if(btn&&btn.id==="btn-save-tipo"){var v=document.getElementById("f-novo-tipo").value.trim();if(!v){alert("Digite o nome!");return}if(D.tiposEscala.indexOf(v)>=0){alert("Esse tipo j\u00E1 existe!");return}D.tiposEscala.push(v);fTipo=v;sv();closeM();renderAll();return}
+  if(btn&&btn.getAttribute("data-del-tipo")){var tp=btn.getAttribute("data-del-tipo");if(confirm("Remover o tipo "+tp+"? As tarefas desse tipo tamb\u00E9m ser\u00E3o removidas.")){D.tiposEscala=D.tiposEscala.filter(function(x){return x!==tp});D.tarefas=D.tarefas.filter(function(t){return t.tipo!==tp});if(fTipo===tp)fTipo=D.tiposEscala[0]||"Gira";sv();renderAll()}return}
+  if(btn&&btn.id==="btn-sel-tarefas"){var dt=document.getElementById("e-data");if(!dt||!dt.value.trim()){alert("Data!");return}var tipo=eS.tipo||"Gira";var all=[];D.tarefas.forEach(function(t,i){if(t.tipo===tipo)all.push(i)});eS={etapa:"selecionar",dataGira:dt.value.trim(),sel:all,tipo:tipo};rEscala();return}
+  if(btn&&btn.id==="btn-gerar-esc"){var st=eS.sel.map(function(i){return D.tarefas[i]});var esc2=gerarEsc(st);eS.etapa="preview";eS.gira={id:D.nGid,data:eS.dataGira,tipo:eS.tipo,status:"rascunho",escala:esc2,presenca:{}};eS.esc=esc2;rEscala();return}
+  if(btn&&btn.id==="btn-canc-sel"||btn&&btn.id==="btn-canc"){eS={etapa:"inicio",tipo:eS.tipo||"Gira"};rEscala();return}
   if(btn&&btn.id==="btn-regen"){var st=eS.sel.map(function(i){return D.tarefas[i]});eS.esc=gerarEsc(st);eS.gira.escala=eS.esc;rEscala();return}
-  if(btn&&btn.id==="btn-pub"){var gi=JSON.parse(JSON.stringify(eS.gira));gi.status="publicada";D.giras.push(gi);D.nGid++;D.rot=(D.rot+1)%4;sv();eS={etapa:"inicio"};renderAll();alert("\u2705 Publicada!");return}
+  if(btn&&btn.id==="btn-pub"){var gi=JSON.parse(JSON.stringify(eS.gira));gi.status="publicada";D.giras.push(gi);D.nGid++;D.rot=(D.rot+1)%4;sv();eS={etapa:"inicio",tipo:eS.tipo||"Gira"};renderAll();alert("\u2705 Publicada!");return}
   if(btn&&btn.getAttribute("data-troca")){var p=btn.getAttribute("data-troca").split("-");trocaOpen(parseInt(p[0]),parseInt(p[1]));return}
   if(btn&&btn.getAttribute("data-pick")){var mid=parseInt(btn.getAttribute("data-pick")),ei=parseInt(btn.getAttribute("data-ei")),mi=parseInt(btn.getAttribute("data-mi"));var m=D.membros.find(function(x){return x.id===mid});if(m){eS.esc[ei].membros[mi]=JSON.parse(JSON.stringify(m));eS.gira.escala=eS.esc}closeM();rEscala();return}
   if(btn&&btn.getAttribute("data-wpp")){var gi=D.giras.find(function(g){return g.id===parseInt(btn.getAttribute("data-wpp"))});if(gi)openM("\uD83D\uDCF1 WhatsApp",'<pre class="wp">'+esc(wppMsg(gi))+'</pre><button class="bt" id="btn-copy" data-gid="'+gi.id+'" style="background:var(--wpp);margin-top:10px">\uD83D\uDCCB Copiar</button>');return}
   if(btn&&btn.id==="btn-copy"){var gid=parseInt(btn.getAttribute("data-gid")),gi=D.giras.find(function(g){return g.id===gid});if(gi)navigator.clipboard.writeText(wppMsg(gi)).then(function(){btn.textContent="\u2705 Copiado!";setTimeout(function(){btn.textContent="\uD83D\uDCCB Copiar"},2000)});return}
-  if(btn&&btn.getAttribute("data-vergira")){var gid2=parseInt(btn.getAttribute("data-vergira"));eS.giraAberta=(eS.giraAberta===gid2?null:gid2);rEscala();return}
+  if(btn&&btn.getAttribute("data-gopres")){pGid=parseInt(btn.getAttribute("data-gopres"));go("presenca");return}
   if(btn&&btn.getAttribute("data-delgira")){if(confirm("Tem certeza que deseja apagar esta gira? Essa a\u00E7\u00E3o n\u00E3o pode ser desfeita.")){var gid=parseInt(btn.getAttribute("data-delgira"));D.giras=D.giras.filter(function(g){return g.id!==gid});sv();renderAll()}return}
   if(div&&div.getAttribute("data-pgira")){pGid=parseInt(div.getAttribute("data-pgira"));rPresenca();return}
   if(btn&&btn.id==="btn-pvolt"){pGid=null;rPresenca();return}
   if(btn&&btn.getAttribute("data-pmark")){var p=btn.getAttribute("data-pmark").split("-");var gi=D.giras.find(function(g){return g.id===pGid});if(gi){if(!gi.presenca)gi.presenca={};gi.presenca[parseInt(p[0])]=p[1];sv();rPresenca()}return}
   if(btn&&btn.getAttribute("data-mens")){var p=btn.getAttribute("data-mens").split("-");D.mensalidades[mesAno()+"_"+parseInt(p[0])]=p[1];sv();rMensalidade();return}
+  if(btn&&btn.id==="btn-edit-valor"){openM("Valor da Mensalidade",'<div class="ig"><label>Valor (R$)</label><input id="f-valor" type="number" step="0.01" min="0" value="'+(D.valorMensalidade||"")+'" placeholder="Ex: 100"></div><button class="bt" id="btn-save-valor" style="background:var(--green)">\u2705 Salvar</button>');return}
+  if(btn&&btn.id==="btn-save-valor"){var v=parseFloat(document.getElementById("f-valor").value);if(!isNaN(v)&&v>=0){D.valorMensalidade=v;sv();closeM();renderAll()}else{alert("Digite um valor!")}return}
   if(btn&&btn.id==="btn-add-item"){openM("Novo Item",'<div class="ig"><label>Item</label><input id="f-item"></div><button class="bt" id="btn-save-item" style="background:var(--green)">\u2705 Adicionar</button>');return}
   if(btn&&btn.id==="btn-save-item"){var v=document.getElementById("f-item").value.trim();if(v){D.itensDoacao.push(v);sv();closeM();renderAll()}return}
   if(btn&&btn.hasAttribute("data-delitem")){D.itensDoacao.splice(parseInt(btn.getAttribute("data-delitem")),1);sv();renderAll();return}
@@ -640,9 +668,14 @@ function doLote(){
 }
 function tFormOpen(idx){
   var t=idx!==undefined?D.tarefas[idx]:null;
-  var nome=t?esc(t.nome):"",qtd=t?t.qtd:1,fase=t?t.fase:FASES[0],fixos=t?t.fixos:[];
-  var h='<div class="ig"><label>Fase</label><select id="f-fase">';
-  FASES.forEach(function(f){h+='<option value="'+f+'"'+(fase===f?' selected':'')+'>'+f+'</option>'});
+  var nome=t?esc(t.nome):"",qtd=t?t.qtd:1,fase=t?t.fase:"",fixos=t?t.fixos:[];
+  var tipo=t?t.tipo:fTipo;
+  if(!fase)fase=FASES_PADRAO[0];
+  var h='<div class="ig"><label>Tipo de escala</label><select id="f-tipo">';
+  D.tiposEscala.forEach(function(tp){h+='<option value="'+esc(tp)+'"'+(tipo===tp?' selected':'')+'>'+esc(tp)+'</option>'});
+  h+='</select></div>';
+  h+='<div class="ig"><label>Fase</label><select id="f-fase">';
+  FASES_PADRAO.forEach(function(f){h+='<option value="'+f+'"'+(fase===f?' selected':'')+'>'+f+'</option>'});
   h+='</select></div>';
   h+='<div class="ig"><label>Tarefa</label><input id="f-tnome" value="'+nome+'"></div>';
   h+='<div class="ig"><label>Qtd pessoas</label><input id="f-tqtd" type="number" min="1" value="'+qtd+'"></div>';
@@ -657,12 +690,13 @@ function tFormOpen(idx){
   openM(t?"Editar Tarefa":"Nova Tarefa",h);
 }
 function saveT(){
+  var tipo=document.getElementById("f-tipo").value;
   var fase=document.getElementById("f-fase").value,nome=document.getElementById("f-tnome").value.trim();
   var qtd=parseInt(document.getElementById("f-tqtd").value)||1,idx=document.getElementById("f-tidx").value;
   if(!nome)return alert("Nome!");
   var fixos=[];document.querySelectorAll("[data-fixo-id]").forEach(function(cb){if(cb.checked)fixos.push(parseInt(cb.getAttribute("data-fixo-id")))});
-  if(idx!==""){var t=D.tarefas[parseInt(idx)];t.fase=fase;t.nome=nome;t.qtd=qtd;t.fixos=fixos}
-  else D.tarefas.push({fase:fase,nome:nome,qtd:qtd,fixos:fixos});
+  if(idx!==""){var t=D.tarefas[parseInt(idx)];t.tipo=tipo;t.fase=fase;t.nome=nome;t.qtd=qtd;t.fixos=fixos}
+  else D.tarefas.push({tipo:tipo,fase:fase,nome:nome,qtd:qtd,fixos:fixos});
   sv();closeM();renderAll();
 }
 function trocaOpen(ei,mi){
