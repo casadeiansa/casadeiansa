@@ -349,6 +349,9 @@ function rTarefas(){
     h+='</div>';
   });
   h+='</div>';
+  if(fTipo!=="Gira"){
+    h+='<button class="bt" id="btn-copiar-gira" style="background:var(--blue)"><span class="bi">\uD83D\uDCCB</span> Copiar tarefas da Gira</button>';
+  }
   var tarefasTipo=D.tarefas.filter(function(t){return t.tipo===fTipo});
   FASES_PADRAO.forEach(function(fase){
     var ts=tarefasTipo.filter(function(t){return t.fase===fase});
@@ -612,6 +615,8 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.id==="btn-add-tipo"){openM("Novo Tipo de Escala",'<div class="ig"><label>Nome do tipo</label><input id="f-novo-tipo" placeholder="Ex: Festa de Ogum"></div><button class="bt" id="btn-save-tipo" style="background:var(--purple)">\u2705 Criar</button>');return}
   if(btn&&btn.id==="btn-save-tipo"){var v=document.getElementById("f-novo-tipo").value.trim();if(!v){alert("Digite o nome!");return}if(D.tiposEscala.indexOf(v)>=0){alert("Esse tipo j\u00E1 existe!");return}D.tiposEscala.push(v);fTipo=v;sv();closeM();renderAll();return}
   if(btn&&btn.getAttribute("data-del-tipo")){var tp=btn.getAttribute("data-del-tipo");if(confirm("Remover o tipo "+tp+"? As tarefas desse tipo tamb\u00E9m ser\u00E3o removidas.")){D.tiposEscala=D.tiposEscala.filter(function(x){return x!==tp});D.tarefas=D.tarefas.filter(function(t){return t.tipo!==tp});if(fTipo===tp)fTipo=D.tiposEscala[0]||"Gira";sv();renderAll()}return}
+  if(btn&&btn.id==="btn-copiar-gira"){var tg=D.tarefas.filter(function(t){return t.tipo==="Gira"});var h2='<p style="font-size:12px;color:#666;margin:0 0 10px">Marque as tarefas da Gira que quer copiar para <b>'+esc(fTipo)+'</b>:</p>';h2+='<div style="max-height:300px;overflow:auto">';tg.forEach(function(t,i){var idx=D.tarefas.indexOf(t);h2+='<div class="chk-row"><input type="checkbox" data-copy-tarefa="'+idx+'" checked>';h2+='<div style="flex:1"><div style="font-size:13px;font-weight:600">'+esc(t.nome)+'</div>';h2+='<div style="font-size:11px;color:var(--gray)">'+t.fase+' \u2022 '+t.qtd+'p</div></div></div>'});h2+='</div>';h2+='<button class="bt" id="btn-confirmar-copia" style="background:var(--green);margin-top:12px">\u2705 Copiar selecionadas</button>';openM("Copiar da Gira",h2);return}
+  if(btn&&btn.id==="btn-confirmar-copia"){var copiadas=0;document.querySelectorAll("[data-copy-tarefa]").forEach(function(cb){if(cb.checked){var idx=parseInt(cb.getAttribute("data-copy-tarefa"));var orig=D.tarefas[idx];if(orig){D.tarefas.push({tipo:fTipo,fase:orig.fase,nome:orig.nome,qtd:orig.qtd,fixos:[]});copiadas++}}});sv();closeM();renderAll();alert("\u2705 "+copiadas+" tarefas copiadas para "+fTipo+"!");return}
   if(btn&&btn.id==="btn-sel-tarefas"){var dt=document.getElementById("e-data");if(!dt||!dt.value.trim()){alert("Data!");return}var tipo=eS.tipo||"Gira";var all=[];D.tarefas.forEach(function(t,i){if(t.tipo===tipo)all.push(i)});eS={etapa:"selecionar",dataGira:dt.value.trim(),sel:all,tipo:tipo};rEscala();return}
   if(btn&&btn.id==="btn-gerar-esc"){var st=eS.sel.map(function(i){return D.tarefas[i]});var esc2=gerarEsc(st);eS.etapa="preview";eS.gira={id:D.nGid,data:eS.dataGira,tipo:eS.tipo,status:"rascunho",escala:esc2,presenca:{}};eS.esc=esc2;rEscala();return}
   if(btn&&btn.id==="btn-canc-sel"||btn&&btn.id==="btn-canc"){eS={etapa:"inicio",tipo:eS.tipo||"Gira"};rEscala();return}
