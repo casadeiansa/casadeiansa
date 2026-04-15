@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a1a2e">
-<title>Casa de Ians\u00E3</title>
+<title>Casa de Iansa</title>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--dk:#1a1a2e;--dk2:#16213e;--dk3:#0f3460;--gold:#f0c040;--gold2:#e6a817;--red:#e74c3c;--blue:#3498db;--green:#2ecc71;--orange:#f39c12;--purple:#9b59b6;--wpp:#25d366;--gray:#888;--lg:#f0f0f0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -72,11 +72,12 @@ input,textarea,select{font-family:inherit}
 <div id="login-screen" class="login-bg">
 <img id="login-logo" style="width:80px;height:80px;border-radius:50%;background:#fff;padding:4px;object-fit:contain;margin-bottom:16px" alt="Logo">
 <div style="color:#fff;font-family:Georgia,serif;font-size:20px;font-weight:800;text-align:center;margin-bottom:4px">Centro Afro-Religioso</div>
-<div style="color:var(--gold);font-family:Georgia,serif;font-size:24px;font-weight:800;text-align:center;margin-bottom:24px">Casa de Ians\u00E3</div>
+<div style="color:var(--gold);font-family:Georgia,serif;font-size:24px;font-weight:800;text-align:center;margin-bottom:24px">Casa de Iansa</div>
 <button id="btn-ef" class="bt" style="background:var(--green);max-width:280px"><span class="bi">👤</span> Entrar como Filho</button>
 <button id="btn-ea" class="bt" style="background:var(--dk3);max-width:280px"><span class="bi">🔐</span> Entrar como Admin</button>
 <div id="ls" style="display:none;margin-top:12px;width:100%;max-width:280px">
 <div class="ig"><input id="inp-s" type="password" placeholder="Digite a senha" style="text-align:center;background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3)"></div>
+<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:12px"><input type="checkbox" id="chk-lembrar" style="width:18px;height:18px;accent-color:var(--gold)"><label for="chk-lembrar" style="color:rgba(255,255,255,.7);font-size:13px">Lembrar senha</label></div>
 <button id="btn-lg" class="bt" style="background:var(--gold);color:var(--dk)"><span class="bi">🔓</span> Entrar</button>
 <div id="lg-err" style="color:var(--red);text-align:center;font-size:12px;margin-top:6px;display:none">Senha incorreta!</div>
 </div>
@@ -110,7 +111,7 @@ firebase.initializeApp({
 });
 var db=firebase.firestore();
 var LOGO="logo.png";
-var PASS="iansa2026";
+var PASS_PADRAO="iansa2026";
 var GR=["A","B","C","D"];
 var GC={A:"#e74c3c",B:"#3498db",C:"#2ecc71",D:"#f39c12"};
 var SM={presente:{i:"\u2705",l:"Presente",c:"#2ecc71"},faltou:{i:"\u274C",l:"Faltou",c:"#e74c3c"},avisou:{i:"\uD83D\uDD14",l:"Avisou",c:"#f39c12"},trocou:{i:"\uD83D\uDD04",l:"Trocou",c:"#3498db"}};
@@ -134,6 +135,7 @@ function loadFromFirebase(cb){
       if(!D.mensalidades)D.mensalidades={};
       if(!D.valorMensalidade)D.valorMensalidade=0;
       if(!D.tiposEscala||!D.tiposEscala.length)D.tiposEscala=["Gira"];
+      if(!D.senhaAdmin)D.senhaAdmin=PASS_PADRAO;
       if(!D.itensDoacao)D.itensDoacao=[];
       if(!D.sorteios)D.sorteios={};
       if(!D.calendario)D.calendario=[];
@@ -203,12 +205,31 @@ function mesAno(){var d=new Date();return(d.getMonth()+1)+"/"+d.getFullYear()}
 // ========== LOGIN ==========
 document.getElementById("login-logo").src=LOGO;
 document.getElementById("btn-ef").addEventListener("click",function(){mode="filho";startApp()});
-document.getElementById("btn-ea").addEventListener("click",function(){document.getElementById("ls").style.display="block"});
+document.getElementById("btn-ea").addEventListener("click",function(){
+  document.getElementById("ls").style.display="block";
+  var saved=localStorage.getItem("terreiro_saved_pass");
+  if(saved){document.getElementById("inp-s").value=saved;document.getElementById("chk-lembrar").checked=true}
+});
 document.getElementById("btn-lg").addEventListener("click",doLogin);
 document.getElementById("inp-s").addEventListener("keydown",function(ev){if(ev.key==="Enter")doLogin()});
 function doLogin(){
-  if(document.getElementById("inp-s").value===PASS){mode="admin";startApp()}
-  else{var el=document.getElementById("lg-err");el.style.display="block";setTimeout(function(){el.style.display="none"},2000)}
+  var senhaDigitada=document.getElementById("inp-s").value;
+  var lembrar=document.getElementById("chk-lembrar").checked;
+  DOC_REF.get().then(function(doc){
+    var senhaCorreta=PASS_PADRAO;
+    if(doc.exists&&doc.data().senhaAdmin){senhaCorreta=doc.data().senhaAdmin}
+    if(senhaDigitada===senhaCorreta){
+      if(lembrar){localStorage.setItem("terreiro_saved_pass",senhaDigitada)}
+      else{localStorage.removeItem("terreiro_saved_pass")}
+      mode="admin";startApp();
+    }else{var el=document.getElementById("lg-err");el.style.display="block";setTimeout(function(){el.style.display="none"},2000)}
+  }).catch(function(){
+    if(senhaDigitada===PASS_PADRAO){
+      if(lembrar){localStorage.setItem("terreiro_saved_pass",senhaDigitada)}
+      else{localStorage.removeItem("terreiro_saved_pass")}
+      mode="admin";startApp();
+    }else{var el=document.getElementById("lg-err");el.style.display="block";setTimeout(function(){el.style.display="none"},2000)}
+  });
 }
 function startApp(){
   document.getElementById("login-screen").style.display="none";
@@ -259,7 +280,7 @@ function go(tab){
 
 function mkHdr(t,sub){
   var h='<div class="hdr"><div class="hdr-row"><img class="li" alt="Logo">';
-  h+='<div class="hdr-nm">Centro Afro-Religioso<br>Casa de Ians\u00E3</div></div>';
+  h+='<div class="hdr-nm">Centro Afro-Religioso<br>Casa de Iansa</div></div>';
   h+='<div class="hdr-t">'+t+'</div>';
   if(sub)h+='<div class="hdr-i">'+sub+'</div>';
   return h+'</div>';
@@ -305,6 +326,7 @@ function rHome(){
     h+='</div>';
   }
   h+='<div class="ng"><div class="nt">\uD83D\uDCA1 Regra de Ouro</div><div class="nd">Quem <strong>n\u00E3o responde</strong> no WhatsApp est\u00E1 <strong>CONFIRMADO</strong> na escala!</div></div>';
+  h+='<button class="bt" id="btn-alterar-senha" style="background:var(--dk3);font-size:13px"><span class="bi">\uD83D\uDD11</span> Alterar Senha</button>';
   h+='<button class="bt" id="btn-logout" style="background:var(--gray);font-size:13px"><span class="bi">\uD83D\uDEAA</span> Sair</button>';
   h+='</div>';
   el.innerHTML=h;setLogos();
@@ -595,6 +617,8 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.getAttribute("data-go")){go(btn.getAttribute("data-go"));return}
   if(btn&&btn.id==="m-close"||t.id==="modal"||t.classList.contains("mo")){closeM();return}
   if(btn&&btn.id==="btn-logout"){mode="";document.getElementById("app").style.display="none";document.getElementById("login-screen").style.display="flex";document.getElementById("ls").style.display="none";return}
+  if(btn&&btn.id==="btn-alterar-senha"){openM("Alterar Senha",'<div class="ig"><label>Senha atual</label><input id="f-senha-atual" type="password"></div><div class="ig"><label>Nova senha</label><input id="f-senha-nova" type="password"></div><div class="ig"><label>Confirmar nova senha</label><input id="f-senha-conf" type="password"></div><button class="bt" id="btn-save-senha" style="background:var(--green)">\u2705 Salvar</button>');return}
+  if(btn&&btn.id==="btn-save-senha"){var atual=document.getElementById("f-senha-atual").value;var nova=document.getElementById("f-senha-nova").value;var conf=document.getElementById("f-senha-conf").value;var senhaCorreta=D.senhaAdmin||PASS_PADRAO;if(atual!==senhaCorreta){alert("Senha atual incorreta!");return}if(!nova||nova.length<4){alert("A nova senha deve ter pelo menos 4 caracteres!");return}if(nova!==conf){alert("As senhas n\u00E3o conferem!");return}D.senhaAdmin=nova;sv();closeM();alert("\u2705 Senha alterada com sucesso!");return}
   // Membros
   if(btn&&btn.id==="btn-add"){openM("Novo Membro",mFormH());return}
   if(btn&&btn.id==="btn-lote"){openM("Importar",'<p style="font-size:12px;color:#666;margin:0 0 10px">Nome, Apelido, Grupo</p><div class="ig"><textarea id="f-lote" rows="6" style="font-family:monospace" placeholder="Fernando, ~Fernando, A"></textarea></div><button class="bt" id="btn-do-lote" style="background:var(--blue)">\uD83D\uDCE5 Importar</button>');return}
