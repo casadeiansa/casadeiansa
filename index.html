@@ -141,7 +141,13 @@ function loadFromFirebase(cb){
       if(!D.rot)D.rot=0;
       if(!D.nMid)D.nMid=1;
       if(!D.nGid)D.nGid=1;
-      D.tarefas.forEach(function(t){if(!t.fixos)t.fixos=[];if(!t.tipo)t.tipo="Gira"});
+      D.tarefas.forEach(function(t){
+        if(!t.fixos)t.fixos=[];
+        if(!t.tipo)t.tipo="Gira";
+        if(t.fase==="PR\u00C9-GIRA")t.fase="PR\u00C9";
+        if(t.fase==="DURANTE A GIRA")t.fase="DURANTE";
+        if(t.fase==="P\u00D3S-GIRA")t.fase="P\u00D3S";
+      });
     }else{
       D.tarefas=defaultTarefas();
       sv();
@@ -164,25 +170,25 @@ function sv(){
 
 function defaultTarefas(){
   return[
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Filho de Trabalho Respons\u00E1vel",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Varrer e passar pano no terreiro + cuspidores",qtd:4,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Varrer cal\u00E7ada e guardar vassouras/rodos/bacias",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Varrer, passar pano e organizar o 2\u00BA andar",qtd:3,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Limpar as cadeiras",qtd:2,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Organizar a cozinha",qtd:2,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Lavar os 3 banheiros e repor utens\u00EDlios",qtd:3,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Lavar panos de ch\u00E3o e estender",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Estoque",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"PR\u00C9-GIRA",nome:"Cuidar da casinha de Exu",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"DURANTE A GIRA",nome:"Caixa",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"DURANTE A GIRA",nome:"Cantina",qtd:2,fixos:[]},
-    {tipo:"Gira",fase:"DURANTE A GIRA",nome:"Chamar a assist\u00EAncia",qtd:3,fixos:[]},
-    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Respons\u00E1vel P\u00F3s-Gira",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Arrumar a cozinha",qtd:2,fixos:[]},
-    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Lavar os 2 banheiros",qtd:2,fixos:[]},
-    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Varrer e passar pano + guardar cuspidores/copos de vela",qtd:4,fixos:[]},
-    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Tirar lixo, guardar vassouras, lavar panos",qtd:1,fixos:[]},
-    {tipo:"Gira",fase:"P\u00D3S-GIRA",nome:"Organizar 2\u00BA andar (verificar pertences)",qtd:1,fixos:[]}
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Filho de Trabalho Respons\u00E1vel",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Varrer e passar pano no terreiro + cuspidores",qtd:4,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Varrer cal\u00E7ada e guardar vassouras/rodos/bacias",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Varrer, passar pano e organizar o 2\u00BA andar",qtd:3,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Limpar as cadeiras",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Organizar a cozinha",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Lavar os 3 banheiros e repor utens\u00EDlios",qtd:3,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Lavar panos de ch\u00E3o e estender",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Estoque",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"PR\u00C9",nome:"Cuidar da casinha de Exu",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"DURANTE",nome:"Caixa",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"DURANTE",nome:"Cantina",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"DURANTE",nome:"Chamar a assist\u00EAncia",qtd:3,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S",nome:"Respons\u00E1vel P\u00F3s-Gira",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S",nome:"Arrumar a cozinha",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S",nome:"Lavar os 2 banheiros",qtd:2,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S",nome:"Varrer e passar pano + guardar cuspidores/copos de vela",qtd:4,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S",nome:"Tirar lixo, guardar vassouras, lavar panos",qtd:1,fixos:[]},
+    {tipo:"Gira",fase:"P\u00D3S",nome:"Organizar 2\u00BA andar (verificar pertences)",qtd:1,fixos:[]}
   ];
 }
 
