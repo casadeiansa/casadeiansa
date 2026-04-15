@@ -117,7 +117,7 @@ var SM={presente:{i:"\u2705",l:"Presente",c:"#2ecc71"},faltou:{i:"\u274C",l:"Fal
 var FASES=["PR\u00C9-GIRA","DURANTE A GIRA","P\u00D3S-GIRA"];
 var FCOR={"PR\u00C9-GIRA":"var(--orange)","DURANTE A GIRA":"var(--blue)","P\u00D3S-GIRA":"var(--green)"};
 
-var D={membros:[],giras:[],tarefas:[],rot:0,nMid:1,nGid:1,mensalidades:{},itensDoacao:[],sorteios:{},calendario:[],avisos:[]};
+var D={membros:[],giras:[],tarefas:[],rot:0,nMid:1,nGid:1,mensalidades:{},itensDoacao:[],sorteios:{},calendario:[],avisos:[],tiposEvento:["Gira"]};
 var mode="",cTab="home",fM="todos",eS={etapa:"inicio",gira:null,esc:null,sel:null,giraAberta:null},pGid=null;
 var dataLoaded=false;
 
@@ -136,6 +136,7 @@ function loadFromFirebase(cb){
       if(!D.sorteios)D.sorteios={};
       if(!D.calendario)D.calendario=[];
       if(!D.avisos)D.avisos=[];
+      if(!D.tiposEvento||!D.tiposEvento.length)D.tiposEvento=["Gira"];
       if(!D.rot)D.rot=0;
       if(!D.nMid)D.nMid=1;
       if(!D.nGid)D.nGid=1;
@@ -368,9 +369,22 @@ function rEscala(){
   var h=mkHdr("Escala",isA()?"Gere e gerencie":"Confira a escala");h+='<div class="ct">';
   if(isA()&&eS.etapa==="inicio"){
     h+='<div class="cd"><div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:6px">\uD83D\uDCCB Nova Escala</div>';
-    h+='<div class="ig"><label>Data da gira</label><input id="e-data" placeholder="Ex: 20/04/2026"></div>';
+    h+='<div class="ig"><label>Tipo de evento</label><select id="e-tipo">';
+    D.tiposEvento.forEach(function(t){h+='<option value="'+t+'">'+t+'</option>'});
+    h+='</select></div>';
+    h+='<div class="ig"><label>Data</label><input id="e-data" placeholder="Ex: 20/04/2026"></div>';
     h+='<button class="bt" id="btn-sel-tarefas" style="background:var(--blue)"'+(a.length<5?' disabled':'')+'><span class="bi">\u2611\uFE0F</span> Selecionar Tarefas</button>';
     if(a.length<5)h+='<p style="font-size:11px;color:var(--red)">\u26A0\uFE0F M\u00EDnimo 5 membros</p>';
+    h+='</div>';
+    h+='<div class="cd"><div style="font-size:13px;font-weight:700;color:var(--dk);margin-bottom:8px">\uD83C\uDFF7\uFE0F Tipos de Evento</div>';
+    D.tiposEvento.forEach(function(t,i){
+      h+='<div class="fx ac jb" style="padding:5px 0;border-bottom:1px solid #f0f0f0">';
+      h+='<span style="font-size:13px">'+t+'</span><div class="fx gp4">';
+      h+='<button style="background:var(--lg);border-radius:6px;padding:4px 8px;font-size:12px" data-renom-tipo="'+i+'">\u270F\uFE0F</button>';
+      if(i>0)h+='<button style="background:#fee;border-radius:6px;padding:4px 8px;font-size:12px" data-del-tipo="'+i+'">\uD83D\uDDD1\uFE0F</button>';
+      h+='</div></div>';
+    });
+    h+='<button class="bt" id="btn-add-tipo" style="background:var(--green);margin-top:8px"><span class="bi">\u2795</span> Novo Tipo</button>';
     h+='</div>';
   }
   if(isA()&&eS.etapa==="selecionar"){
@@ -403,11 +417,12 @@ function rEscala(){
     h+='<button class="bt" id="btn-pub" style="background:var(--green)"><span class="bi">\u2705</span> Publicar</button>';
   }
   if(p.length){
-    h+='<h3 style="font-size:14px;font-weight:700;color:var(--dk);margin:4px 0">\uD83D\uDCC5 Giras publicadas</h3>';
+    h+='<h3 style="font-size:14px;font-weight:700;color:var(--dk);margin:4px 0">\uD83D\uDCC5 Eventos publicados</h3>';
     p.slice(-5).reverse().forEach(function(g){
       var tot=g.escala.reduce(function(s,x){return s+x.membros.length},0);
+      var tipo=g.tipo||"Gira";
       h+='<div class="cd" style="padding:10px 12px"><div class="fx jb ac"><div>';
-      h+='<div style="font-weight:700;font-size:14px">Gira '+esc(g.data)+'</div>';
+      h+='<div style="font-weight:700;font-size:14px">'+esc(tipo)+' \u2014 '+esc(g.data)+'</div>';
       h+='<div style="font-size:11px;color:var(--gray)">'+tot+' pessoas</div></div><div class="fx gp4">';
       if(isA()){h+='<button class="bt bt-sm" style="background:var(--wpp)" data-wpp="'+g.id+'">\uD83D\uDCF1</button>';h+='<button class="bt bt-sm" style="background:var(--orange)" data-gopres="'+g.id+'">\u2705</button>';h+='<button class="bt bt-sm" style="background:var(--red)" data-delgira="'+g.id+'">\uD83D\uDDD1\uFE0F</button>'}
       else{h+='<button class="bt bt-sm" style="background:var(--dk3)" data-vergira="'+g.id+'">\uD83D\uDC41 Ver</button>'}
@@ -580,10 +595,15 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.hasAttribute("data-del-tarefa")){if(confirm("Remover?")){D.tarefas.splice(parseInt(btn.getAttribute("data-del-tarefa")),1);sv();renderAll()}return}
   if(btn&&btn.id==="btn-save-tarefa"){saveT();return}
   // Escala
-  if(btn&&btn.id==="btn-sel-tarefas"){var dt=document.getElementById("e-data");if(!dt||!dt.value.trim()){alert("Data!");return}var all=[];D.tarefas.forEach(function(t,i){all.push(i)});eS={etapa:"selecionar",dataGira:dt.value.trim(),sel:all};rEscala();return}
-  if(btn&&btn.id==="btn-gerar-esc"){var st=eS.sel.map(function(i){return D.tarefas[i]});var esc2=gerarEsc(st);eS.etapa="preview";eS.gira={id:D.nGid,data:eS.dataGira,status:"rascunho",escala:esc2,presenca:{}};eS.esc=esc2;rEscala();return}
-  if(btn&&btn.id==="btn-canc-sel"||btn&&btn.id==="btn-canc"){eS={etapa:"inicio"};rEscala();return}
+  if(btn&&btn.id==="btn-sel-tarefas"){var dt=document.getElementById("e-data");if(!dt||!dt.value.trim()){alert("Data!");return}var tp=document.getElementById("e-tipo");var all=[];D.tarefas.forEach(function(t,i){all.push(i)});eS={etapa:"selecionar",dataGira:dt.value.trim(),tipoGira:tp?tp.value:"Gira",sel:all,giraAberta:null};rEscala();return}
+  if(btn&&btn.id==="btn-gerar-esc"){var st=eS.sel.map(function(i){return D.tarefas[i]});var esc2=gerarEsc(st);eS.etapa="preview";eS.gira={id:D.nGid,data:eS.dataGira,tipo:eS.tipoGira||"Gira",status:"rascunho",escala:esc2,presenca:{}};eS.esc=esc2;rEscala();return}
+  if(btn&&btn.id==="btn-canc-sel"||btn&&btn.id==="btn-canc"){eS={etapa:"inicio",giraAberta:null};rEscala();return}
   if(btn&&btn.id==="btn-regen"){var st=eS.sel.map(function(i){return D.tarefas[i]});eS.esc=gerarEsc(st);eS.gira.escala=eS.esc;rEscala();return}
+  if(btn&&btn.id==="btn-add-tipo"){openM("Novo Tipo",'<div class="ig"><label>Nome</label><input id="f-tipo-nm" placeholder="Ex: Festa de Ogum"></div><button class="bt" id="btn-save-tipo" style="background:var(--green)">\u2705 Adicionar</button>');return}
+  if(btn&&btn.id==="btn-save-tipo"){var v=document.getElementById("f-tipo-nm").value.trim();if(v){D.tiposEvento.push(v);sv();closeM();rEscala()}return}
+  if(btn&&btn.getAttribute("data-renom-tipo")){var ti=parseInt(btn.getAttribute("data-renom-tipo")),tn=D.tiposEvento[ti];openM("Renomear",'<div class="ig"><label>Nome</label><input id="f-tipo-ren" value="'+tn+'"></div><input type="hidden" id="f-tipo-idx" value="'+ti+'"><button class="bt" id="btn-save-renom" style="background:var(--blue)">\u2705 Salvar</button>');return}
+  if(btn&&btn.id==="btn-save-renom"){var ti2=parseInt(document.getElementById("f-tipo-idx").value),v2=document.getElementById("f-tipo-ren").value.trim();if(v2){D.tiposEvento[ti2]=v2;sv();closeM();rEscala()}return}
+  if(btn&&btn.getAttribute("data-del-tipo")){var ti3=parseInt(btn.getAttribute("data-del-tipo"));if(confirm("Remover tipo?")){D.tiposEvento.splice(ti3,1);sv();rEscala()}return}
   if(btn&&btn.id==="btn-pub"){var gi=JSON.parse(JSON.stringify(eS.gira));gi.status="publicada";D.giras.push(gi);D.nGid++;D.rot=(D.rot+1)%4;sv();eS={etapa:"inicio"};renderAll();alert("\u2705 Publicada!");return}
   if(btn&&btn.getAttribute("data-troca")){var p=btn.getAttribute("data-troca").split("-");trocaOpen(parseInt(p[0]),parseInt(p[1]));return}
   if(btn&&btn.getAttribute("data-pick")){var mid=parseInt(btn.getAttribute("data-pick")),ei=parseInt(btn.getAttribute("data-ei")),mi=parseInt(btn.getAttribute("data-mi"));var m=D.membros.find(function(x){return x.id===mid});if(m){eS.esc[ei].membros[mi]=JSON.parse(JSON.stringify(m));eS.gira.escala=eS.esc}closeM();rEscala();return}
