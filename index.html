@@ -676,36 +676,38 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.id==="btn-gerar-esc"){var st=eS.sel.map(function(i){return D.tarefas[i]});var esc2=gerarEsc(st);eS.etapa="preview";eS.gira={id:D.nGid,data:eS.dataGira,tipo:eS.tipo,status:"rascunho",escala:esc2,presenca:{}};eS.esc=esc2;rEscala();return}
   if(btn&&btn.id==="btn-canc-sel"||btn&&btn.id==="btn-canc"){eS={etapa:"inicio",tipo:eS.tipo||"Gira"};rEscala();return}
   if(btn&&btn.id==="btn-regen"){var st=eS.sel.map(function(i){return D.tarefas[i]});eS.esc=gerarEsc(st);eS.gira.escala=eS.esc;rEscala();return}
-  if(btn&&btn.id==="btn-pub"){var gi=JSON.parse(JSON.stringify(eS.gira));gi.status="publicada";gi.voluntariado=eS.voluntariado||false;gi.voluntarios={};D.giras.push(gi);D.nGid++;D.rot=(D.rot+1)%4;sv();eS={etapa:"inicio",tipo:eS.tipo||"Gira"};renderAll();alert("\u2705 Publicada!");return}
+  if(btn&&btn.id==="btn-pub"){var gi=JSON.parse(JSON.stringify(eS.gira));gi.status="publicada";gi.voluntariado=eS.voluntariado||false;gi.voluntarios=[];if(gi.voluntariado){gi.escala.forEach(function(item){if(item.fase!=="DURANTE"){item.membros=[]}})}D.giras.push(gi);D.nGid++;D.rot=(D.rot+1)%4;sv();eS={etapa:"inicio",tipo:eS.tipo||"Gira"};renderAll();alert("\u2705 Publicada!"+(gi.voluntariado?"\n\uD83D\uDD0B Voluntariado ativo! Aguardando inscri\u00E7\u00F5es dos filhos.":""));return}
   if(btn&&btn.getAttribute("data-troca")){var p=btn.getAttribute("data-troca").split("-");trocaOpen(parseInt(p[0]),parseInt(p[1]));return}
   if(btn&&btn.getAttribute("data-pick")){var mid=parseInt(btn.getAttribute("data-pick")),ei=parseInt(btn.getAttribute("data-ei")),mi=parseInt(btn.getAttribute("data-mi"));var m=D.membros.find(function(x){return x.id===mid});if(m){eS.esc[ei].membros[mi]=JSON.parse(JSON.stringify(m));eS.gira.escala=eS.esc}closeM();rEscala();return}
   if(btn&&btn.getAttribute("data-ver-escala")){var gid=parseInt(btn.getAttribute("data-ver-escala")),gi=D.giras.find(function(g){return g.id===gid});if(gi){var tipo=gi.tipo||"Gira";var hv='<div style="font-size:12px;color:var(--gray);margin-bottom:10px">\uD83D\uDCC5 '+esc(tipo)+' \u2014 '+esc(gi.data)+'</div>';var fa2="";gi.escala.forEach(function(item){if(item.fase!==fa2){fa2=item.fase;hv+='<div class="fh" style="background:'+(FCOR[fa2]||"#888")+';margin-bottom:6px">'+fa2+'</div>'}hv+='<div class="cd" style="padding:8px 12px;margin-bottom:6px"><div style="font-size:12px;font-weight:700;color:#444;margin-bottom:4px">'+esc(item.tarefa)+'</div><div class="fx fw gp4">';item.membros.forEach(function(m){hv+='<span class="mc2">'+gb(m.grupo)+' '+(m.apelido?'@'+esc(m.apelido):esc(m.nome))+'</span>'});hv+='</div></div>'});openM("\uD83D\uDCC5 Escala "+esc(gi.data),hv)}return}
   if(btn&&btn.getAttribute("data-inscr")){
-    var gid=parseInt(btn.getAttribute("data-inscr")),gi=D.giras.find(function(g){return g.id===gid});
+    var gid=parseInt(btn.getAttribute("data-inscr"));
+    window._volGid=gid;
+    var gi=D.giras.find(function(g){return g.id===gid});
     if(gi){
       var hv='<div style="font-size:13px;color:#555;margin-bottom:14px">Informe seus dados para se voluntariar na <b>'+esc(gi.tipo||"Gira")+'</b> de <b>'+esc(gi.data)+'</b>.</div>';
-      hv+='<div class="ig"><label>Seu nome</label><input id="f-vol-nome" placeholder="Como você é conhecido"></div>';
-      hv+='<div class="ig"><label>Celular (WhatsApp)</label><input id="f-vol-cel" type="tel" placeholder="(11) 99999-9999"></div>';
-      hv+='<div style="font-size:12px;font-weight:700;color:#444;margin:4px 0 10px">Disponível para:</div>';
+      hv+='<div class="ig"><label>Seu nome</label><input id="f-vol-nome" placeholder="Como voc\u00EA \u00E9 conhecido"></div>';
+      hv+='<div class="ig"><label>Celular (WhatsApp)</label><input id="f-vol-cel" type="tel" placeholder="(21) 99999-9999"></div>';
+      hv+='<div style="font-size:12px;font-weight:700;color:#444;margin:4px 0 10px">Dispon\u00EDvel para:</div>';
       hv+='<div class="fx gp8">';
-      hv+='<button id="btn-vol-pre" style="flex:1;padding:14px 8px;border-radius:12px;background:var(--orange);color:#fff;font-weight:800;font-size:13px">\uD83D\uDD38<br>PRÉ</button>';
-      hv+='<button id="btn-vol-pos" style="flex:1;padding:14px 8px;border-radius:12px;background:var(--green);color:#fff;font-weight:800;font-size:13px">\uD83D\uDD38<br>PÓS</button>';
-      hv+='<button id="btn-vol-ambos" style="flex:1;padding:14px 8px;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;font-size:13px">\u2605<br>Ambos</button>';
+      hv+='<button class="bt" data-vol-disp="PR\u00C9" style="flex:1;padding:14px 8px;background:var(--orange);font-size:13px">\uD83D\uDD38 PR\u00C9</button>';
+      hv+='<button class="bt" data-vol-disp="P\u00D3S" style="flex:1;padding:14px 8px;background:var(--green);font-size:13px">\uD83D\uDD38 P\u00D3S</button>';
+      hv+='<button class="bt" data-vol-disp="PR\u00C9 e P\u00D3S" style="flex:1;padding:14px 8px;background:var(--blue);font-size:13px">\u2605 Ambos</button>';
       hv+='</div>';
       openM("\u270B Me Voluntariar",hv);
-      function salvarVol(disp){
-        var nome=document.getElementById("f-vol-nome").value.trim();
-        var cel=document.getElementById("f-vol-cel").value.trim();
-        if(!nome){alert("Digite seu nome!");return}
-        if(!cel){alert("Digite seu celular!");return}
-        if(!gi.voluntarios)gi.voluntarios=[];
-        gi.voluntarios.push({nome:nome,cel:cel,disp:disp});
-        sv();closeM();
-        alert("\u2705 Inscrito com sucesso!\nVocê se voluntariou para: "+disp);
-      }
-      document.getElementById("btn-vol-pre").onclick=function(){salvarVol("PRÉ")};
-      document.getElementById("btn-vol-pos").onclick=function(){salvarVol("PÓS")};
-      document.getElementById("btn-vol-ambos").onclick=function(){salvarVol("PRÉ e PÓS")};
+    }return}
+  if(btn&&btn.getAttribute("data-vol-disp")){
+    var disp=btn.getAttribute("data-vol-disp");
+    var nome=document.getElementById("f-vol-nome");
+    var cel=document.getElementById("f-vol-cel");
+    if(!nome||!nome.value.trim()){alert("Digite seu nome!");return}
+    if(!cel||!cel.value.trim()){alert("Digite seu celular!");return}
+    var gi=D.giras.find(function(g){return g.id===window._volGid});
+    if(gi){
+      if(!gi.voluntarios||typeof gi.voluntarios!=="object"||!Array.isArray(gi.voluntarios))gi.voluntarios=[];
+      gi.voluntarios.push({nome:nome.value.trim(),cel:cel.value.trim(),disp:disp});
+      sv();closeM();renderAll();
+      alert("\u2705 Inscrito com sucesso!\nVoc\u00EA se voluntariou para: "+disp);
     }return}
   if(btn&&btn.getAttribute("data-ver-vol")){
     var gid=parseInt(btn.getAttribute("data-ver-vol")),gi=D.giras.find(function(g){return g.id===gid});
