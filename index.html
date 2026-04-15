@@ -683,51 +683,73 @@ document.addEventListener("click",function(ev){
   if(btn&&btn.getAttribute("data-inscr")){
     var gid=parseInt(btn.getAttribute("data-inscr")),gi=D.giras.find(function(g){return g.id===gid});
     if(gi){
-      var vol=gi.voluntarios||{};
-      var nms=D.membros.filter(function(m){return m.ativo});
-      var hv='<div style="font-size:12px;color:#666;margin-bottom:12px">Marque sua disponibilidade para <b>'+esc(gi.data)+'</b>:</div>';
-      hv+='<div class="ig"><label>Seu nome</label><select id="f-vol-membro"><option value="">Selecione...</option>';
-      nms.forEach(function(m){hv+='<option value="'+m.id+'">'+(m.apelido?'@'+esc(m.apelido)+' — ':'')+esc(m.nome)+'</option>'});
-      hv+='</select></div>';
-      hv+='<div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px">Disponível para:</div>';
-      hv+='<div class="fx gp8" style="margin-bottom:14px">';
-      hv+='<button id="btn-vol-pre" style="flex:1;padding:12px;border-radius:12px;background:var(--orange);color:#fff;font-weight:800;font-size:14px">\uD83D\uDD38 PRÉ</button>';
-      hv+='<button id="btn-vol-pos" style="flex:1;padding:12px;border-radius:12px;background:var(--green);color:#fff;font-weight:800;font-size:14px">\uD83D\uDD38 PÓS</button>';
-      hv+='<button id="btn-vol-ambos" style="flex:1;padding:12px;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;font-size:14px">\u2605 Ambos</button>';
+      var hv='<div style="font-size:13px;color:#555;margin-bottom:14px">Informe seus dados para se voluntariar na <b>'+esc(gi.tipo||"Gira")+'</b> de <b>'+esc(gi.data)+'</b>.</div>';
+      hv+='<div class="ig"><label>Seu nome</label><input id="f-vol-nome" placeholder="Como você é conhecido"></div>';
+      hv+='<div class="ig"><label>Celular (WhatsApp)</label><input id="f-vol-cel" type="tel" placeholder="(11) 99999-9999"></div>';
+      hv+='<div style="font-size:12px;font-weight:700;color:#444;margin:4px 0 10px">Disponível para:</div>';
+      hv+='<div class="fx gp8">';
+      hv+='<button id="btn-vol-pre" style="flex:1;padding:14px 8px;border-radius:12px;background:var(--orange);color:#fff;font-weight:800;font-size:13px">\uD83D\uDD38<br>PRÉ</button>';
+      hv+='<button id="btn-vol-pos" style="flex:1;padding:14px 8px;border-radius:12px;background:var(--green);color:#fff;font-weight:800;font-size:13px">\uD83D\uDD38<br>PÓS</button>';
+      hv+='<button id="btn-vol-ambos" style="flex:1;padding:14px 8px;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;font-size:13px">\u2605<br>Ambos</button>';
       hv+='</div>';
-      hv+='<div style="font-size:11px;color:var(--gray);margin-bottom:8px">Inscritos até agora:</div>';
-      var temVols=false;
-      Object.keys(vol).forEach(function(mid){
-        var mv=D.membros.find(function(x){return x.id===parseInt(mid)});
-        if(mv){temVols=true;hv+='<div style="font-size:12px;padding:4px 0;border-bottom:1px solid #f0f0f0">'+gb(mv.grupo)+' '+(mv.apelido?'@'+esc(mv.apelido):esc(mv.nome))+' \u2192 <b>'+vol[mid]+'</b></div>'}
-      });
-      if(!temVols)hv+='<div style="color:#ccc;font-size:12px">Ninguém inscrito ainda.</div>';
-      openM("\u270B Inscrição — "+esc(gi.data),hv);
-      document.getElementById("btn-vol-pre").onclick=function(){var mid=document.getElementById("f-vol-membro").value;if(!mid){alert("Selecione seu nome!");return}gi.voluntarios=gi.voluntarios||{};gi.voluntarios[mid]="PRÉ";sv();closeM();alert("\u2705 Inscrito no PRÉ!")};
-      document.getElementById("btn-vol-pos").onclick=function(){var mid=document.getElementById("f-vol-membro").value;if(!mid){alert("Selecione seu nome!");return}gi.voluntarios=gi.voluntarios||{};gi.voluntarios[mid]="PÓS";sv();closeM();alert("\u2705 Inscrito no PÓS!")};
-      document.getElementById("btn-vol-ambos").onclick=function(){var mid=document.getElementById("f-vol-membro").value;if(!mid){alert("Selecione seu nome!");return}gi.voluntarios=gi.voluntarios||{};gi.voluntarios[mid]="PRÉ e PÓS";sv();closeM();alert("\u2705 Inscrito no PRÉ e PÓS!")};
+      openM("\u270B Me Voluntariar",hv);
+      function salvarVol(disp){
+        var nome=document.getElementById("f-vol-nome").value.trim();
+        var cel=document.getElementById("f-vol-cel").value.trim();
+        if(!nome){alert("Digite seu nome!");return}
+        if(!cel){alert("Digite seu celular!");return}
+        if(!gi.voluntarios)gi.voluntarios=[];
+        gi.voluntarios.push({nome:nome,cel:cel,disp:disp});
+        sv();closeM();
+        alert("\u2705 Inscrito com sucesso!\nVocê se voluntariou para: "+disp);
+      }
+      document.getElementById("btn-vol-pre").onclick=function(){salvarVol("PRÉ")};
+      document.getElementById("btn-vol-pos").onclick=function(){salvarVol("PÓS")};
+      document.getElementById("btn-vol-ambos").onclick=function(){salvarVol("PRÉ e PÓS")};
     }return}
   if(btn&&btn.getAttribute("data-ver-vol")){
     var gid=parseInt(btn.getAttribute("data-ver-vol")),gi=D.giras.find(function(g){return g.id===gid});
     if(gi){
-      var vol=gi.voluntarios||{};
-      var pre=[],pos=[],ambos=[];
-      Object.keys(vol).forEach(function(mid){
-        var mv=D.membros.find(function(x){return x.id===parseInt(mid)});
-        if(!mv)return;
-        var disp=vol[mid];
-        var nm=gb(mv.grupo)+' '+(mv.apelido?'@'+esc(mv.apelido):esc(mv.nome));
-        if(disp==="PRÉ e PÓS"){ambos.push(nm)}else if(disp==="PRÉ"){pre.push(nm)}else{pos.push(nm)};
-      });
-      var hv='<div style="font-size:12px;color:#666;margin-bottom:10px">Voluntários para <b>'+esc(gi.data)+'</b></div>';
-      hv+='<div class="fh" style="background:var(--orange)">PRÉ ('+( pre.length+ambos.length)+')</div>';
-      if(pre.length+ambos.length===0)hv+='<div style="color:#aaa;font-size:12px;padding:6px 0">Nenhum</div>';
-      pre.concat(ambos).forEach(function(n){hv+='<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f0f0">'+n+'</div>'});
-      hv+='<div class="fh" style="background:var(--green);margin-top:8px">PÓS ('+(pos.length+ambos.length)+')</div>';
-      if(pos.length+ambos.length===0)hv+='<div style="color:#aaa;font-size:12px;padding:6px 0">Nenhum</div>';
-      pos.concat(ambos).forEach(function(n){hv+='<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f0f0">'+n+'</div>'});
+      var vol=gi.voluntarios||[];
+      var pre=vol.filter(function(v){return v.disp==="PRÉ"||v.disp==="PRÉ e PÓS"});
+      var pos=vol.filter(function(v){return v.disp==="PÓS"||v.disp==="PRÉ e PÓS"});
+      var hv='<div style="font-size:12px;color:#666;margin-bottom:10px">'+vol.length+' voluntário(s) para <b>'+esc(gi.data)+'</b></div>';
+      hv+='<div class="fh" style="background:var(--orange)">PRÉ ('+pre.length+')</div>';
+      if(!pre.length)hv+='<div style="color:#aaa;font-size:12px;padding:6px 0">Nenhum ainda</div>';
+      pre.forEach(function(v){hv+='<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between"><span>'+esc(v.nome)+'</span><span style="color:var(--gray);font-size:11px">'+esc(v.cel)+'</span></div>'});
+      hv+='<div class="fh" style="background:var(--green);margin-top:8px">PÓS ('+pos.length+')</div>';
+      if(!pos.length)hv+='<div style="color:#aaa;font-size:12px;padding:6px 0">Nenhum ainda</div>';
+      pos.forEach(function(v){hv+='<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between"><span>'+esc(v.nome)+'</span><span style="color:var(--gray);font-size:11px">'+esc(v.cel)+'</span></div>'});
+      if(vol.length>0){
+        hv+='<button id="btn-sortear-vol" data-gid="'+gi.id+'" class="bt" style="background:var(--purple);margin-top:14px">\u26A1 Sortear com Voluntários</button>';
+      }else{
+        hv+='<div style="margin-top:12px;padding:10px;background:#fff9e6;border-radius:10px;font-size:12px;color:#8a6d00;text-align:center">\u26A0\uFE0F Aguardando inscrições dos filhos</div>';
+      }
       openM("\uD83D\uDC65 Voluntários — "+esc(gi.data),hv);
     }return}
+  if(btn&&btn.id==="btn-sortear-vol"){
+    var gid=parseInt(btn.getAttribute("data-gid")),gi=D.giras.find(function(g){return g.id===gid});
+    if(!gi){return}
+    var vol=gi.voluntarios||[];
+    if(!vol.length){alert("Nenhum voluntário ainda!");return}
+    var tipo=gi.tipo||"Gira";
+    var tarefasTipo=D.tarefas.filter(function(t){return t.tipo===tipo&&t.fase!=="DURANTE"});
+    if(!tarefasTipo.length){alert("Nenhuma tarefa de PRÉ/PÓS cadastrada!");return}
+    var poolPre=shuf(vol.filter(function(v){return v.disp==="PRÉ"||v.disp==="PRÉ e PÓS"}));
+    var poolPos=shuf(vol.filter(function(v){return v.disp==="PÓS"||v.disp==="PRÉ e PÓS"}));
+    var novaEscala=[];
+    tarefasTipo.forEach(function(t){
+      var pool=t.fase==="PRÉ"?poolPre:poolPos;
+      var membros=[];
+      for(var i=0;i<t.qtd;i++){
+        if(pool.length){membros.push({nome:pool[i%pool.length].nome,cel:pool[i%pool.length].cel,grupo:"A",id:null})}
+      }
+      novaEscala.push({fase:t.fase,tarefa:t.nome,qtd:t.qtd,membros:membros});
+    });
+    gi.escala=novaEscala;
+    gi.sorteadoVol=true;
+    sv();closeM();renderAll();
+    alert("\u2705 Escala sorteada com os voluntários!");return}
   if(btn&&btn.getAttribute("data-wpp")){var gi=D.giras.find(function(g){return g.id===parseInt(btn.getAttribute("data-wpp"))});if(gi)openM("\uD83D\uDCF1 WhatsApp",'<pre class="wp">'+esc(wppMsg(gi))+'</pre><button class="bt" id="btn-copy" data-gid="'+gi.id+'" style="background:var(--wpp);margin-top:10px">\uD83D\uDCCB Copiar</button>');return}
   if(btn&&btn.id==="btn-copy"){var gid=parseInt(btn.getAttribute("data-gid")),gi=D.giras.find(function(g){return g.id===gid});if(gi)navigator.clipboard.writeText(wppMsg(gi)).then(function(){btn.textContent="\u2705 Copiado!";setTimeout(function(){btn.textContent="\uD83D\uDCCB Copiar"},2000)});return}
   if(btn&&btn.getAttribute("data-gopres")){pGid=parseInt(btn.getAttribute("data-gopres"));go("presenca");return}
