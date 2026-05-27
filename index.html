@@ -481,6 +481,7 @@ var eS = {
   sel: null,         // tarefas selecionadas
   selFilhos: [],     // IDs dos filhos que vão participar
   fasesFilhos: {},   // { filhoId: "PRÉ" | "PÓS" | "AMBOS" }
+  escolherFases: false, // true = pergunta PRÉ/PÓS de cada um, false = sorteio geral
   tipo: "Gira",
   voluntariado: false
 };
@@ -738,7 +739,7 @@ function go(tab) {
   cTab = tab;
 
   if (tab === "escala") {
-    eS = { etapa: "inicio", gira: null, esc: null, sel: null, selFilhos: [], fasesFilhos: {}, tipo: "Gira", voluntariado: false };
+    eS = { etapa: "inicio", gira: null, esc: null, sel: null, selFilhos: [], fasesFilhos: {}, escolherFases: false, tipo: "Gira", voluntariado: false };
   }
   if (tab === "presenca") pGid = null;
 
@@ -998,21 +999,23 @@ function rTarefas() {
 
 // ============================================
 // GERADOR DE ESCALA
-// — Respeita a lista de filhos selecionados e a fase escolhida pra cada um
-// — PRÉ: só entra em tarefas PRÉ
-// — PÓS: só entra em tarefas PÓS
-// — AMBOS: pode entrar em PRÉ ou PÓS
-// — DURANTE: qualquer um selecionado (independente da fase) pode entrar
+// — Respeita a lista de filhos selecionados
+// — Se fasesFilhos vier vazio: sorteio geral (qualquer um em qualquer fase)
+// — Se vier com fases definidas:
+//     • PRÉ:   só entra em tarefas PRÉ
+//     • PÓS:   só entra em tarefas PÓS
+//     • AMBOS: pode entrar em PRÉ ou PÓS
+//     • DURANTE: sempre pega qualquer um dos selecionados
 // ============================================
 function gerarEsc(tarefasSel, filhosIds, fasesFilhos) {
   fasesFilhos = fasesFilhos || {};
+  var temFases = Object.keys(fasesFilhos).length > 0;
 
   // Pega só os filhos que o admin marcou pra participar
   var poolMembros = D.membros.filter(function (m) {
     return m.ativo && filhosIds.indexOf(m.id) >= 0;
   });
 
-  var rot = D.rot;
   var todosFixos = {};
 
   // Marca os fixos pra não entrarem no sorteio
@@ -1021,21 +1024,29 @@ function gerarEsc(tarefasSel, filhosIds, fasesFilhos) {
   });
 
   // Pools separados por fase
-  // — disponíveis pra PRÉ: quem foi marcado como PRÉ ou AMBOS
-  // — disponíveis pra PÓS: quem foi marcado como PÓS ou AMBOS
-  // — disponíveis pra DURANTE: todos os selecionados
-  var poolPre = shuf(poolMembros.filter(function (m) {
-    if (todosFixos[m.id]) return false;
-    var f = fasesFilhos[m.id];
-    return f === "PRÉ" || f === "AMBOS";
-  }));
+  var poolPre, poolPos;
 
-  var poolPos = shuf(poolMembros.filter(function (m) {
-    if (todosFixos[m.id]) return false;
-    var f = fasesFilhos[m.id];
-    return f === "PÓS" || f === "AMBOS";
-  }));
+  if (temFases) {
+    // Modo "escolher fases" — separa pools conforme escolha
+    poolPre = shuf(poolMembros.filter(function (m) {
+      if (todosFixos[m.id]) return false;
+      var f = fasesFilhos[m.id];
+      return f === "PRÉ" || f === "AMBOS";
+    }));
 
+    poolPos = shuf(poolMembros.filter(function (m) {
+      if (todosFixos[m.id]) return false;
+      var f = fasesFilhos[m.id];
+      return f === "PÓS" || f === "AMBOS";
+    }));
+  } else {
+    // Modo simples (sorteio geral) — qualquer um pode em qualquer fase
+    var todosSorteaveis = poolMembros.filter(function (m) { return !todosFixos[m.id]; });
+    poolPre = shuf(todosSorteaveis);
+    poolPos = shuf(todosSorteaveis);
+  }
+
+  // DURANTE sempre pega de todos os selecionados (independente do modo)
   var poolDurante = shuf(poolMembros.filter(function (m) {
     return !todosFixos[m.id];
   }));
@@ -1136,6 +1147,21 @@ function rEscala() {
                 (volAtivo ? "ON" : "OFF") + '</button>';
     h +=   '</div></div>';
 
+    // Toggle de escolher fases (PRÉ/PÓS/AMBOS por filho)
+    var escFases = eS.escolherFases || false;
+    h +=   '<div class="cd" style="background:' + (escFases ? "#e3f2fd" : "#f8f8f8") +
+           ';border:2px solid ' + (escFases ? "var(--blue)" : "#ddd") + ';padding:12px">';
+    h +=     '<div class="fx ac jb"><div>';
+    h +=       '<div style="font-size:13px;font-weight:700;color:' + (escFases ? "var(--blue)" : "#888") + '">🎯 Escolher PRÉ/PÓS por filho</div>';
+    h +=       '<div style="font-size:11px;color:#888;margin-top:2px">' +
+                  (escFases ? "Você define em qual fase cada filho fica" : "OFF = sorteio geral (qualquer filho em qualquer fase)") +
+                '</div>';
+    h +=     '</div>';
+    h +=     '<button id="btn-toggle-fases" style="padding:6px 14px;border-radius:20px;background:' +
+                (escFases ? "var(--blue)" : "#ccc") + ';color:#fff;font-weight:800;font-size:12px">' +
+                (escFases ? "ON" : "OFF") + '</button>';
+    h +=   '</div></div>';
+
     // Botão pra ir pra próxima etapa (selecionar filhos)
     h +=   '<button class="bt" id="btn-ir-filhos" style="background:var(--purple)"' +
            (a.length < 5 ? " disabled" : "") + '>' +
@@ -1149,33 +1175,44 @@ function rEscala() {
   if (isA() && eS.etapa === "filhos") {
     h += '<div class="cd" style="background:#fff4e6;border:2px solid var(--orange)">';
     h +=   '<div style="font-size:15px;font-weight:800;color:var(--orange)">👥 Quem vai participar?</div>';
-    h +=   '<div style="font-size:11px;color:var(--gray);margin-top:3px">' +
+    if (eS.escolherFases) {
+      h += '<div style="font-size:11px;color:var(--gray);margin-top:3px">' +
               'Toque em cada filho pra escolher se faz <b>PRÉ</b>, <b>PÓS</b> ou <b>AMBOS</b><br>' +
               '<span style="font-size:10px">(' + esc(eS.tipo) + ' — ' + esc(eS.dataGira) + ')</span>' +
             '</div>';
+    } else {
+      h += '<div style="font-size:11px;color:var(--gray);margin-top:3px">' +
+              'Toque nos filhos pra <b>marcar</b> quem vai participar<br>' +
+              '<span style="font-size:10px">(' + esc(eS.tipo) + ' — ' + esc(eS.dataGira) + ')</span>' +
+            '</div>';
+    }
     h += '</div>';
 
-    // Contador detalhado por fase
-    var nPre   = 0;
-    var nPos   = 0;
-    var nAmbos = 0;
-    Object.keys(eS.fasesFilhos).forEach(function (k) {
-      var f = eS.fasesFilhos[k];
-      if (f === "PRÉ")   nPre++;
-      if (f === "PÓS")   nPos++;
-      if (f === "AMBOS") nAmbos++;
-    });
-
+    // Contador
     h += '<div class="cd" style="padding:12px">';
-    h +=   '<div class="fx jb ac" style="margin-bottom:6px">';
+    h +=   '<div class="fx jb ac" style="margin-bottom:' + (eS.escolherFases ? "6" : "0") + 'px">';
     h +=     '<div><span style="font-size:24px;font-weight:800;color:var(--dk)">' + eS.selFilhos.length + '</span>';
     h +=     '<span style="font-size:13px;color:var(--gray)"> de ' + a.length + ' selecionados</span></div>';
     h +=   '</div>';
-    h +=   '<div class="fx gp6" style="font-size:11px;flex-wrap:wrap">';
-    h +=     '<span style="background:var(--orange);color:#fff;padding:3px 10px;border-radius:10px;font-weight:700">PRÉ: ' + nPre + '</span>';
-    h +=     '<span style="background:var(--green);color:#fff;padding:3px 10px;border-radius:10px;font-weight:700">PÓS: ' + nPos + '</span>';
-    h +=     '<span style="background:var(--blue);color:#fff;padding:3px 10px;border-radius:10px;font-weight:700">AMBOS: ' + nAmbos + '</span>';
-    h +=   '</div>';
+
+    if (eS.escolherFases) {
+      // Contador detalhado por fase
+      var nPre   = 0;
+      var nPos   = 0;
+      var nAmbos = 0;
+      Object.keys(eS.fasesFilhos).forEach(function (k) {
+        var f = eS.fasesFilhos[k];
+        if (f === "PRÉ")   nPre++;
+        if (f === "PÓS")   nPos++;
+        if (f === "AMBOS") nAmbos++;
+      });
+
+      h += '<div class="fx gp6" style="font-size:11px;flex-wrap:wrap">';
+      h +=   '<span style="background:var(--orange);color:#fff;padding:3px 10px;border-radius:10px;font-weight:700">PRÉ: ' + nPre + '</span>';
+      h +=   '<span style="background:var(--green);color:#fff;padding:3px 10px;border-radius:10px;font-weight:700">PÓS: ' + nPos + '</span>';
+      h +=   '<span style="background:var(--blue);color:#fff;padding:3px 10px;border-radius:10px;font-weight:700">AMBOS: ' + nAmbos + '</span>';
+      h += '</div>';
+    }
     h += '</div>';
 
     // Atalhos de seleção em massa
@@ -1183,9 +1220,16 @@ function rEscala() {
     h +=   '<div style="font-size:11px;color:var(--gray);margin-bottom:6px;font-weight:700">Atalhos:</div>';
     h +=   '<div class="fx gp4" style="flex-wrap:wrap">';
     h +=     '<button class="ch" data-marcar="nenhum" style="background:#fee;color:var(--red)">✗ Limpar tudo</button>';
-    h +=     '<button class="ch" data-marcar="PRÉ" style="background:var(--orange);color:#fff">Todos PRÉ</button>';
-    h +=     '<button class="ch" data-marcar="PÓS" style="background:var(--green);color:#fff">Todos PÓS</button>';
-    h +=     '<button class="ch" data-marcar="AMBOS" style="background:var(--blue);color:#fff">Todos AMBOS</button>';
+    if (eS.escolherFases) {
+      h +=   '<button class="ch" data-marcar="PRÉ" style="background:var(--orange);color:#fff">Todos PRÉ</button>';
+      h +=   '<button class="ch" data-marcar="PÓS" style="background:var(--green);color:#fff">Todos PÓS</button>';
+      h +=   '<button class="ch" data-marcar="AMBOS" style="background:var(--blue);color:#fff">Todos AMBOS</button>';
+    } else {
+      h +=   '<button class="ch" data-marcar="todos" style="background:var(--green);color:#fff">✓ Marcar todos</button>';
+      GR.forEach(function (g) {
+        h += '<button class="ch" data-marcar-grupo="' + g + '" style="background:' + GC[g] + ';color:#fff">+ ' + g + '</button>';
+      });
+    }
     h +=   '</div>';
     h += '</div>';
 
@@ -1199,7 +1243,8 @@ function rEscala() {
 
       membrosGrupo.forEach(function (m) {
         var fase = eS.fasesFilhos[m.id]; // "PRÉ", "PÓS", "AMBOS" ou undefined
-        var marcado = !!fase;
+        var marcadoSimples = eS.selFilhos.indexOf(m.id) >= 0;
+        var marcado = eS.escolherFases ? !!fase : marcadoSimples;
 
         // Cor da borda e do badge muda conforme a fase escolhida
         var corBorda = "#e8e8e8";
@@ -1207,12 +1252,19 @@ function rEscala() {
         var badgeTxt = "";
         var badgeCor = "";
 
-        if (fase === "PRÉ")   { corBorda = "var(--orange)"; corFundo = "#fff4e6"; badgeTxt = "PRÉ";   badgeCor = "var(--orange)"; }
-        if (fase === "PÓS")   { corBorda = "var(--green)";  corFundo = "#e8f5e9"; badgeTxt = "PÓS";   badgeCor = "var(--green)"; }
-        if (fase === "AMBOS") { corBorda = "var(--blue)";   corFundo = "#e3f2fd"; badgeTxt = "AMBOS"; badgeCor = "var(--blue)"; }
+        if (eS.escolherFases) {
+          // Modo "escolher fases" — cor por fase
+          if (fase === "PRÉ")   { corBorda = "var(--orange)"; corFundo = "#fff4e6"; badgeTxt = "PRÉ";   badgeCor = "var(--orange)"; }
+          if (fase === "PÓS")   { corBorda = "var(--green)";  corFundo = "#e8f5e9"; badgeTxt = "PÓS";   badgeCor = "var(--green)"; }
+          if (fase === "AMBOS") { corBorda = "var(--blue)";   corFundo = "#e3f2fd"; badgeTxt = "AMBOS"; badgeCor = "var(--blue)"; }
+        } else {
+          // Modo simples — verde quando marcado
+          if (marcadoSimples) { corBorda = "var(--green)"; corFundo = "#e8f5e9"; }
+        }
 
-        // Card inteiro é o botão — qualquer toque abre o modal de fase
-        h += '<button type="button" data-escolher-fase="' + m.id + '" ';
+        // Card inteiro é o botão — atributo muda conforme o modo
+        var attr = eS.escolherFases ? "data-escolher-fase" : "data-toggle-filho";
+        h += '<button type="button" ' + attr + '="' + m.id + '" ';
         h +=   'style="width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;';
         h +=   'border-radius:14px;border:2px solid ' + corBorda + ';';
         h +=   'background:' + corFundo + ';';
@@ -1227,12 +1279,14 @@ function rEscala() {
         if (m.apelido) h += '<span style="display:block;font-size:11px;color:var(--gray)">@' + esc(m.apelido) + '</span>';
         h +=   '</span>';
 
-        // Badge da fase escolhida (à direita)
-        if (marcado) {
-          h += '<span style="pointer-events:none;background:' + badgeCor + ';color:#fff;';
-          h +=   'padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800;flex-shrink:0">' + badgeTxt + '</span>';
-        } else {
-          h += '<span style="pointer-events:none;color:var(--gray);font-size:11px;flex-shrink:0">toque p/ escolher</span>';
+        // Badge da fase (só no modo escolher fases)
+        if (eS.escolherFases) {
+          if (marcado) {
+            h += '<span style="pointer-events:none;background:' + badgeCor + ';color:#fff;';
+            h +=   'padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800;flex-shrink:0">' + badgeTxt + '</span>';
+          } else {
+            h += '<span style="pointer-events:none;color:var(--gray);font-size:11px;flex-shrink:0">toque p/ escolher</span>';
+          }
         }
 
         h += '</button>';
@@ -1247,7 +1301,10 @@ function rEscala() {
            '<span class="bi">→</span> Próximo: Tarefas</button>';
     h += '</div>';
     if (eS.selFilhos.length < 1) {
-      h += '<p style="font-size:11px;color:var(--red);text-align:center">⚠️ Toque nos cards pra escolher PRÉ, PÓS ou AMBOS</p>';
+      var msgVal = eS.escolherFases
+        ? "⚠️ Toque nos cards pra escolher PRÉ, PÓS ou AMBOS"
+        : "⚠️ Marque pelo menos 1 filho";
+      h += '<p style="font-size:11px;color:var(--red);text-align:center">' + msgVal + '</p>';
     }
   }
 
@@ -1872,6 +1929,15 @@ document.addEventListener("click", function (ev) {
   // ---------- Voluntariado toggle ----------
   if (btn && btn.id === "btn-toggle-vol") { eS.voluntariado = !eS.voluntariado; rEscala(); return; }
 
+  // ---------- Toggle de escolher fases (PRÉ/PÓS por filho) ----------
+  if (btn && btn.id === "btn-toggle-fases") {
+    eS.escolherFases = !eS.escolherFases;
+    // Quando desliga, limpa as fases já escolhidas pra não ficar resíduo
+    if (!eS.escolherFases) eS.fasesFilhos = {};
+    rEscala();
+    return;
+  }
+
   // ---------- ETAPA 1 → ETAPA 2: ir pra seleção de filhos ----------
   if (btn && btn.id === "btn-ir-filhos") {
     var dt = document.getElementById("e-data");
@@ -1883,7 +1949,17 @@ document.addEventListener("click", function (ev) {
     return;
   }
 
-  // ---------- ETAPA 2: tocar no card abre modal de escolha de fase ----------
+  // ---------- ETAPA 2 (modo simples): marcar/desmarcar filho sem fase ----------
+  if (btn && btn.getAttribute("data-toggle-filho")) {
+    var fid = parseInt(btn.getAttribute("data-toggle-filho"));
+    var pos = eS.selFilhos.indexOf(fid);
+    if (pos >= 0) eS.selFilhos.splice(pos, 1);
+    else          eS.selFilhos.push(fid);
+    rEscala();
+    return;
+  }
+
+  // ---------- ETAPA 2 (modo escolher fases): tocar abre modal ----------
   if (btn && btn.getAttribute("data-escolher-fase")) {
     var fid = parseInt(btn.getAttribute("data-escolher-fase"));
     var membro = D.membros.find(function (x) { return x.id === fid; });
@@ -1949,6 +2025,10 @@ document.addEventListener("click", function (ev) {
     if (modo === "nenhum") {
       eS.selFilhos = [];
       eS.fasesFilhos = {};
+    } else if (modo === "todos") {
+      // Modo simples — marca todos sem fase
+      eS.selFilhos = atv().map(function (m) { return m.id; });
+      eS.fasesFilhos = {};
     } else {
       // PRÉ, PÓS ou AMBOS — aplica em todos os ativos
       eS.selFilhos = atv().map(function (m) { return m.id; });
@@ -1960,9 +2040,26 @@ document.addEventListener("click", function (ev) {
     return;
   }
 
+  // Atalho por grupo (só no modo simples)
+  if (btn && btn.getAttribute("data-marcar-grupo")) {
+    var grp = btn.getAttribute("data-marcar-grupo");
+    var idsGrupo = atv().filter(function (m) { return m.grupo === grp; }).map(function (m) { return m.id; });
+    idsGrupo.forEach(function (id) {
+      if (eS.selFilhos.indexOf(id) < 0) eS.selFilhos.push(id);
+    });
+    rEscala();
+    return;
+  }
+
   // ---------- ETAPA 2 → ETAPA 3: ir pra seleção de tarefas ----------
   if (btn && btn.id === "btn-ir-tarefas") {
-    if (eS.selFilhos.length < 1) { alert("Toque nos filhos pra escolher PRÉ, PÓS ou AMBOS!"); return; }
+    if (eS.selFilhos.length < 1) {
+      var msg = eS.escolherFases
+        ? "Toque nos filhos pra escolher PRÉ, PÓS ou AMBOS!"
+        : "Marque pelo menos 1 filho!";
+      alert(msg);
+      return;
+    }
     // Pré-marca todas as tarefas do tipo (excluindo DURANTE se for voluntariado)
     var all = [];
     D.tarefas.forEach(function (t, i) {
@@ -2002,7 +2099,7 @@ document.addEventListener("click", function (ev) {
 
   // ---------- Cancelar ----------
   if (btn && (btn.id === "btn-canc-sel" || btn.id === "btn-canc")) {
-    eS = { etapa: "inicio", gira: null, esc: null, sel: null, selFilhos: [], fasesFilhos: {}, tipo: eS.tipo || "Gira", voluntariado: false };
+    eS = { etapa: "inicio", gira: null, esc: null, sel: null, selFilhos: [], fasesFilhos: {}, escolherFases: false, tipo: eS.tipo || "Gira", voluntariado: false };
     rEscala();
     return;
   }
@@ -2034,7 +2131,7 @@ document.addEventListener("click", function (ev) {
     D.rot = (D.rot + 1) % 4;
     sv();
 
-    eS = { etapa: "inicio", gira: null, esc: null, sel: null, selFilhos: [], fasesFilhos: {}, tipo: eS.tipo || "Gira", voluntariado: false };
+    eS = { etapa: "inicio", gira: null, esc: null, sel: null, selFilhos: [], fasesFilhos: {}, escolherFases: false, tipo: eS.tipo || "Gira", voluntariado: false };
     renderAll();
     alert("✅ Publicada!" + (gi.voluntariado ? "\n🔋 Voluntariado ativo! Aguardando inscrições dos filhos." : ""));
     return;
